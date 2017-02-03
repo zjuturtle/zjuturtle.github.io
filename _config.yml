@@ -74,4 +74,5 @@ deploy:
 duoshuo_shortname: zjuturtle
 
 # 头像配置
-avatar: /images/avatar.png
+avatar: images/avatar.png
+
