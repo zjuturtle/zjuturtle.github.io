@@ -1,2 +1,4 @@
 # zjuturtle.com
-personal blog use django
+personal blog use Hexo
+
+
