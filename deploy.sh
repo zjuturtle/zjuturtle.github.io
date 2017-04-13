@@ -2,4 +2,4 @@ hexo clean
 hexo generate
 rm -rf /var/www/hexo
 cp -r public /var/www
-mv public hexo
+mv /var/www/public /var/www/hexo
