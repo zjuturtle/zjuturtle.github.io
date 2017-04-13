@@ -70,9 +70,6 @@ theme: next
 deploy:
   type:
 
-# 多说配置
-duoshuo_shortname: zjuturtle
 
 # 头像配置
 avatar: images/avatar.png
-
