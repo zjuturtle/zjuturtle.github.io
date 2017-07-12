@@ -11,6 +11,8 @@ tags:
 
 现在手头上需要管理的服务器有点多，每次登陆的时候都需要输入密码。然后就想用 ssh key 的方式来登陆。针对每一个服务器，都生成一对公钥私钥对。
 
+<!--more-->
+
 ## 生成公钥和私钥
 
 在 mac 或者 linux 系统下
@@ -30,7 +32,7 @@ ssh-keygen -t rsa -b 4096
 在本机执行以下命令
 
 ~~~sh
-cat ~/.ssh/zjuturtle_rsa.pub | ssh user@host 'cat >> .ssh/authorized_keys'
+cat ~/.ssh/id_rsa.pub | ssh user@host "mkdir -p ~/.ssh && cat >>  ~/.ssh/authorized_keys"
 ~~~
 
 ## 设置本地 Host
