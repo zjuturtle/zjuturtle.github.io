@@ -32,7 +32,7 @@ ssh-keygen -t rsa -b 4096
 在本机执行以下命令
 
 ~~~sh
-cat ~/.ssh/id_rsa.pub | ssh user@host "mkdir -p ~/.ssh && cat >>  ~/.ssh/authorized_keys"
+cat ~/.ssh/zjuturtle_rsa.pub | ssh user@host "mkdir -p ~/.ssh && cat >>  ~/.ssh/authorized_keys"
 ~~~
 
 ## 设置本地 Host
@@ -40,13 +40,13 @@ cat ~/.ssh/id_rsa.pub | ssh user@host "mkdir -p ~/.ssh && cat >>  ~/.ssh/authori
 在 `~/.ssh` 文件夹下，应该有一个 `config` 文件。添加以下内容，能让 ssh 登录更加便捷
 
 ~~~
-Host zjuturtle
+Host turtle
     HostName zjuturtle.com
     User turtle
-    IdentityFile ~/.ssh/zjuturtle
+    IdentityFile ~/.ssh/zjuturtle_rsa
 ~~~
 
-这样在命令行里，运行 `ssh zjuturtle` 就可以直接登录啦~
+这样在命令行里，运行 `ssh turtle` 就可以直接登录啦~
 
 
 
