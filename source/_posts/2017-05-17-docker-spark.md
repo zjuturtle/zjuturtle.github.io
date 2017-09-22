@@ -13,7 +13,7 @@ tags:
 
 <!--more-->
 
-# Docker
+## Docker
 
 讲真 Docker 是好东西，拿来批量部署简直爽。
 
@@ -29,7 +29,7 @@ tags:
 
 唯一的遗留问题是如果真的有某个倒霉的设备IP地址是10.200.10.1。恩...这种事情一定不会发生的，对吧？
 
-# Spark
+## Spark
 
 我打算以一个 Ubuntu 的 images 为基础，在上面搭上环境，再 docker save 出来，不知道有没有更好的方法，不过先这么着吧。
 
@@ -112,7 +112,7 @@ docker run -d -p 8088:8088 -p 4040:4040 -p 7077:7077 -p 8080:8080 -p 6066:6066 -
 docker run -d --name=sparkSlave local/sparkcluster /app/start-slave.sh [IP:port]
 ~~~
 
-# Docker 网络
+## Docker 网络
 
 其实关于 Docker 的 network 部分我捣鼓了好久，也没有什么特别好的解决方案。对于 Docker 而言，一个 container 可以根据 --network 参数指定它的 network 类型。默认情况下网络类型是 bridge，其余还有 host 和 none 两种。参照 Docker 的[文档](https://docs.docker.com/engine/reference/run/#network-settings)，理想情况下为了提升性能应该使用 host 模式，注意这里的措辞是 significantly.
 
@@ -122,7 +122,7 @@ docker run -d --name=sparkSlave local/sparkcluster /app/start-slave.sh [IP:port]
 
 不得已，只能使用默认的 bridge 模式。
 
-# 部署
+## 部署
 
 在我的本地 Mac 上，通过`docker run`可以直接跑起来，也能够访问`localhost:8080`看到 Spark 的控制面板。
 
@@ -290,7 +290,7 @@ bucket.get_object_to_file(OSS_DOCKER_IMAGE_NAME, 'dockerImage.tar', progress_cal
 ~~~
 
 
-# 总结
+## 总结
 
 回头想想，似乎 docker 的使用也没有那么必要。只是装了一层皮，相对的部署环境会更加统一和无脑。唯一的麻烦就是为了保证最新版本，过段时间就要更新一下那个 spark 的 docker 镜像，同时 `docker_install.sh`脚本因为涉及到`apt install`命令，其实也需要常常查看有什么幺蛾子。
 

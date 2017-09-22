@@ -13,7 +13,7 @@ tags:
 
 <!--more-->
 
-# 公式兼容
+## 公式兼容
 
 其实在上一篇的博文里我遇到一个比较蛋疼的问题是公式的显示。我所使用的Hexo主题[Next](http://theme-next.iissnan.com/)是本身支持[MathJax](https://www.mathjax.org/)显示，只要在它原来的主题配置文件里面打开一个开关就可以了，蛋疼之处在于Hexo自己的渲染引擎和MathJax的语法冲突。因此直接替换了Hexo自带的渲染引擎，使用了[Pandoc](http://pandoc.org/)
 
@@ -33,14 +33,14 @@ npm install hexo-renderer-pandoc --save
 
 搞定
 
-# 多说替换为云跟帖
+## 多说替换为云跟帖
 
 我刚用多说才没几个月，它就要下线了（估计是这个项目实在赚不到什么钱吧）。能让广大群众免费这么久也是不容易，在此对多说说一声谢谢。只能说自己没有赶上好时候啊。
 
 我想网易养猪场的[云跟贴](https://gentie.163.com/)应该不那么容易倒闭吧，所以就把多说删了迁移到网易上来了（其实好像也没人评论囧），只希望对小站用户能一直免费下去吧。也是该一行代码就完事。具体参照[Next第三方服务接入说明](http://theme-next.iissnan.com/third-party-services.html)
 
 
-# 流量统计
+## 流量统计
 
 在流量统计上，加上了大疼讯的[腾讯分析](http://ta.qq.com/)。也是在Next主题里修改一行代码就好，参照[Next第三方服务接入说明](http://theme-next.iissnan.com/third-party-services.html)。
 
@@ -48,7 +48,7 @@ npm install hexo-renderer-pandoc --save
 
 [Next](http://theme-next.iissnan.com/)真是便利啊！
 
-# 全站https
+## 全站https
 
 我打算使用[Let's Encrypt](letsencrypt.org)结合[Nginx](https://www.nginx.com)来实现全站https。根据指引直接使用了[acme-nginx](https://github.com/kshcherban/acme-nginx)
 
