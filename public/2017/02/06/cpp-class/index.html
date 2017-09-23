@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="C++," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="闲的时候捧起《C++ primer》重新复习了下类相关概念，主要是一些以前没有特别明确的。">
+<meta name="keywords" content="C++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++类拾遗">
+<meta property="og:url" content="https://zjuturtle.com/2017/02/06/cpp-class/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="闲的时候捧起《C++ primer》重新复习了下类相关概念，主要是一些以前没有特别明确的。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-09-22T03:38:25.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++类拾遗">
+<meta name="twitter:description" content="闲的时候捧起《C++ primer》重新复习了下类相关概念，主要是一些以前没有特别明确的。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://zjuturtle.com/2017/02/06/cpp-class/"/>
+
+
+
+
+
+  <title>C++类拾遗 | zjuturtle's blog</title>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=61683784";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">zjuturtle's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2017/02/06/cpp-class/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">C++类拾遗</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-02-06T17:41:13+08:00">
+                2017-02-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C-Altar/" itemprop="url" rel="index">
+                    <span itemprop="name">C++Altar</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2017/02/06/cpp-class/" class="leancloud_visitors" data-flag-title="C++类拾遗">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>闲的时候捧起《C++ primer》重新复习了下类相关概念，主要是一些以前没有特别明确的。</p>
+<a id="more"></a>
+<h2 id="类定义">类定义</h2>
+<h3 id="class-vs-struct">class vs struct</h3>
+<p>以前的C里是没有class这个关键字的，struct只用于一些数据类型的结合。在C++里，这两个关键字的唯一区别是默认访问权限不同。</p>
+<ul>
+<li>class默认是private</li>
+<li>struct默认是public</li>
+</ul>
+<p>在我的个人习惯里，struct仍然只有一般数据聚合的作用，并且最好是定长的，不包含任何其他方法，而class则用于定义类</p>
+<h3 id="this指针">this指针</h3>
+<p>成员函数可以通过this指针来访问调用它的对象，在成员函数内部可以省略</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">isbn</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> <span class="keyword">this</span>-&gt;bookNo; &#125;</div></pre></td></tr></table></figure>
+<h3 id="const成员函数">const成员函数</h3>
+<p>在类的成员函数末尾的cost关键字，可以修改this指针为const指针，可以避免成员函数修改类成员变量</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">isbn</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> <span class="keyword">this</span>-&gt;bookNo; &#125;</div></pre></td></tr></table></figure>
+<h2 id="构造函数">构造函数</h2>
+<h3 id="默认构造函数">默认构造函数</h3>
+<p>如果没有为对象提供构造函数，则编译器会自动创建构造函数，称为合成的默认构造函数。 合成默认构造函数规则：</p>
+<ul>
+<li>如果存在类内的初始值，则用初始值初始化类的数据成员</li>
+<li>默认初始化该成员</li>
+</ul>
+<p>某些类不能依赖于合成的默认构造函数：</p>
+<ul>
+<li>编译器只有在发现类不包含任何构造函数的情况下才会生成默认构造函数</li>
+<li>合成的默认构造函数可能执行错误的操作（内置类型或复合类型默认初始化，则它们的值将是未定义的，似乎和C的兼容有关）</li>
+<li>有时编译器不能为某些类提供默认构造函数，因为类中包含的其他类型的成员包含了非默认构造函数</li>
+</ul>
+<h3 id="default的含义">=default的含义</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">SalesData</span>&#123;</span></div><div class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> _bookNo;</div><div class="line">    SalesData() = <span class="keyword">default</span>;</div><div class="line">    SalesData(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;s) : _bookNo(s) &#123;&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>该构造函数(default)不接收任何参数，所以是默认构造函数。这个构造函数完全等同于合成默认构造函数，并且如果在类内部定义则是内联的，在外部定义则不是</p>
+<h3 id="构造函数初始化列表">构造函数初始化列表</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SalesData(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;s): bookNo(s) &#123;&#125;</div></pre></td></tr></table></figure>
+<p>冒号和花括号间的代码为构造函数初始值列表，负责为新创建的对象的数据成员赋初值。</p>
+<p>注意：</p>
+<ul>
+<li>构造函数不应该轻易覆盖类内初始值</li>
+<li>如果你不能使用类内初始值，则所有构造函数均应该显示初始化每个内置类型</li>
+</ul>
+<h3 id="委托构造函数">委托构造函数</h3>
+<p>这个是C++11里面的新功能，放上例子。在委托构造函数中，先执行其本身的代码（花括弧中的…），再去执行被委托的构造方法</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">SalesData</span> &#123;</span></div><div class="line">    <span class="comment">//非委托构造函数</span></div><div class="line">    SalesData(<span class="built_in">std</span>::<span class="built_in">string</span> s)&#123;&#125;</div><div class="line">    SalesData(<span class="built_in">std</span>::<span class="built_in">string</span> s, <span class="keyword">unsigned</span> count):bookNo(s), unitsSold(count)&#123;&#125;</div><div class="line">    <span class="comment">//委托构造函数</span></div><div class="line">    SalesData(): SalesData(<span class="string">""</span>,<span class="number">0</span>)&#123;...&#125;</div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">combine</span><span class="params">(<span class="keyword">const</span> SalesData&amp; item)</span></span>&#123;&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="explicit关键字">explicit关键字</h3>
+<p>explicit关键字主要是用在隐式转换上。比如说item是一个SalesData对象，该对象有一个combine方法，接受一个SalesData类型的常量引用。那么</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//显式转换成string，隐式转化成SalesData，正确</span></div><div class="line">item.combine(<span class="built_in">string</span>(<span class="string">"99999"</span>));</div><div class="line"><span class="comment">//隐式转换成string，显式转换成SalesData，正确</span></div><div class="line">item.combine(SalesData(<span class="string">"99999"</span>));</div><div class="line"></div><div class="line"><span class="comment">//但是不能两步转换！错误！</span></div><div class="line">item.combine(<span class="string">"999999"</span>);</div></pre></td></tr></table></figure>
+<p>而explicit关键字能阻止隐式转换（顾名思义嘛，explicit是明确的意思）</p>
+<p>不过要注意一点的是，explicit关键字只对单个参数的构造函数有效，需要多个参数的构造函数不适用隐式转换，因此也就不需要explicit关键字了。</p>
+<h2 id="类的拷贝赋值析构">类的拷贝、赋值、析构</h2>
+<p>大多数情况下编译器会自动生成默认的拷贝、赋值、析构函数，但是也不尽然，尤其是当类内有动态分配的内存时（比如涉及到new delete之类的）。事实上为了防止我们在内存的枪林弹雨里挣扎，《C++ Primer》建议能用std里的东西就用std里的东西，比如vector或string之类的。</p>
+<h3 id="类拷贝">类拷贝</h3>
+<p>拷贝构造函数指的是：一个构造函数的第一个参数是自身类型的引用，且任何额外参数都有默认值</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> &#123;</span></div><div class="line"><span class="keyword">public</span>:</div><div class="line">    Foo();</div><div class="line">    Foo(<span class="keyword">const</span> Foo&amp;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>因此对于类而言</p>
+<ul>
+<li>直接初始化：要求编译器使用普通的函数匹配</li>
+<li>拷贝初始化：将右侧的运算对象拷贝到正在创建的对象中（可能还有类型转换）</li>
+</ul>
+<p>以下是书中给的例子</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//直接初始化</span></div><div class="line"><span class="function"><span class="built_in">string</span> <span class="title">dots</span><span class="params">(<span class="number">10</span>, <span class="string">'.'</span>)</span></span>;</div><div class="line"><span class="function"><span class="built_in">string</span> <span class="title">s</span><span class="params">(dots)</span></span>;</div><div class="line"><span class="built_in">string</span> s2 = dots;</div><div class="line"><span class="comment">//拷贝初始化</span></div><div class="line"><span class="built_in">string</span> book = <span class="string">"999999"</span>;</div><div class="line"><span class="built_in">string</span> nine = <span class="built_in">string</span>(<span class="number">100</span>, <span class="string">'9'</span>);</div></pre></td></tr></table></figure>
+<p>值得注意的是，拷贝初始化不仅在使用=的时候发生，还包括了：</p>
+<ul>
+<li>将一个对象作为实参传递给一个非引用类型形参</li>
+<li>从一个返回类型为非引用类型的函数返回一个对象</li>
+<li>用花括弧列表初始化一个数组中的元素或一个聚合类中的成员</li>
+</ul>
+<p>前两点比较好理解。在我的个人实践中，为了防止超大的vector在函数调用中引起的内存拷贝，一般这么写（不知道有没有更优雅的方式）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">fun</span><span class="params">(<span class="keyword">const</span> <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;arg, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;res)</span></span>;</div></pre></td></tr></table></figure>
+<p>最后一点中的聚合类指的是只包含数据的struct，可以如此初始化</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Foo</span></span></div><div class="line"><span class="class">&#123;</span></div><div class="line">  <span class="keyword">int</span> a;</div><div class="line">  <span class="keyword">double</span> b;</div><div class="line">&#125;;</div><div class="line">Foo foo = &#123; <span class="number">1</span>, <span class="number">2</span> &#125;;</div></pre></td></tr></table></figure>
+<p>这里有一点值得注意，即拷贝初始化和explicit关键字。如果我们使用的初始化值是通过一个explicit构造函数进行类型转换，那么就要注意。这里有点微妙，来用vector说明一下。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; v1(<span class="number">10</span>);<span class="comment">//正确的直接初始化，这个构造函数是explicit的</span></div><div class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; v2 = <span class="number">10</span>；<span class="comment">//错误，这里有隐式转换，但是被explicit阻止了</span></div><div class="line"><span class="keyword">void</span> f(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;);<span class="comment">//f的参数是拷贝初始化</span></div><div class="line">f(<span class="number">10</span>);<span class="comment">//错误，不能隐式地将10转为vector&lt;int&gt;</span></div><div class="line">f(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;(<span class="number">10</span>));<span class="comment">//正确，显式地将10转为vector</span></div></pre></td></tr></table></figure>
+<h3 id="类赋值">类赋值</h3>
+<p>这里主要是涉及到了赋值运算符的重载。对于默认的赋值运算符（即合成拷贝赋值运算符），会对右侧的对象每个非static成员赋予左边，用的是拷贝构造函数。也就是说，大部分上都是直接内存拷贝，正确地使用是不会有野指针问题。当然可以重载，这个就要小心啦，指针容易乱飞，尤其是再掺上多线程，啧啧，那酸爽。</p>
+<h3 id="类析构">类析构</h3>
+<p>析构函数不接受参数，也没有返回值，不能被重载。一般而言，内置类型没有析构函数，因此销毁内置类型成员什么也不需要做。但是指针类型的需要小心！不然会出现内存泄露。</p>
+<p>什么时候会调用析构函数：</p>
+<ul>
+<li>变量在离开作用域时</li>
+<li>一个对象被销毁，其成员也被销毁</li>
+<li>容器（包括标准库容器和数组）销毁时，其元素也被销毁</li>
+<li>动态分配内存的对象，对其指向其指针使用delete时</li>
+<li>临时对象，创建它的完整表达式结束时被销毁</li>
+</ul>
+<p>书中提到一点，析构函数本身并不直接销毁成员。成员是在析构函数体之后隐含的析构阶段中被销毁的。析构函数在某些时候用于阻止对象被销毁，这里就可能造成new和delete不能成对出现（其实现在我还是想不通这又有什么用。。。）。如下</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">NoDeconstruct</span> &#123;</span></div><div class="line">    NoDeconstruct() = <span class="keyword">default</span>;</div><div class="line">    ~NoDeconstruct() = <span class="keyword">delete</span>;<span class="comment">//表示删除该方法</span></div><div class="line">&#125;</div><div class="line">NoDeconstruct n;<span class="comment">//错误：析构方法不存在</span></div><div class="line">NoDeconstruct *p = <span class="keyword">new</span> NoDeconstruct();<span class="comment">//正确</span></div><div class="line"><span class="keyword">delete</span> p;<span class="comment">//错误</span></div></pre></td></tr></table></figure>
+<p>专门在Xcode上试了一下，还真可以。不过这点在三/五法则中直接禁止，个人认为析构函数在绝大多数情况下都不会被删除。</p>
+<h3 id="三五法则">三/五法则</h3>
+<p>三指的是拷贝构造函数、拷贝赋值函数、析构函数。五指的是对应的五条法则。</p>
+<p><strong>1.需要析构函数的类也需要拷贝构造函数和拷贝赋值函数</strong></p>
+<p>典型的情况就是类内包含指针成员。指针成员需要析构函数来释放其指向的内存，那么如果执行默认的拷贝构造函数，意味着内存共享，然而这个共享是不靠谱的。想象一下拷贝构造出来的对象被销毁了，意味着那块共享的内存也没了</p>
+<p><strong>2.需要拷贝操作的类也需要赋值操作，反之亦然</strong></p>
+<p>需要拷贝操作代表这个类在拷贝时需要进行一些额外的操作。赋值操作=先析构+拷贝，所以拷贝需要的赋值也需要。反之亦然。</p>
+<p><strong>3.析构函数不能是删除的</strong></p>
+<p>上面已经说明</p>
+<p><strong>4.如果一个类有删除的或不可访问的析构函数，那么其默认和拷贝构造函数会被定义为删除的</strong></p>
+<p>个人觉得这条是上面的补充说明。如果没有这条规则，可能会创造出无法被删除的对象（除非是动态分配）。 理论上来说，当析构函数不能被访问时（比如被删除），任何静态定义的对象都不能通过编译器的编译。所以这种情况只会出现在与动态分配有关的拷贝/默认构造函数身上，就是上面说的奇葩用法，只能new不能delete。</p>
+<p><strong>5.如果一个类有const或引用成员，则不能使用合成的拷贝赋值操作</strong></p>
+<p>因为const成员只在初始化的时候赋值一次。而合成的拷贝赋值会对所有成员赋值，无法通过编译。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/C/" rel="tag"># C++</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/03/regex-split-csv/" rel="next" title="正则表达式分割csv文件">
+                <i class="fa fa-chevron-left"></i> 正则表达式分割csv文件
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/09/new_linux/" rel="prev" title="Ubuntu的开箱工作">
+                Ubuntu的开箱工作 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="zjuturtle" />
+          <p class="site-author-name" itemprop="name">zjuturtle</p>
+           
+              <p class="site-description motion-element" itemprop="description">瞎几把搞的幸运E</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/zjuturtle" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GitHub
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#类定义"><span class="nav-number">1.</span> <span class="nav-text">类定义</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#class-vs-struct"><span class="nav-number">1.1.</span> <span class="nav-text">class vs struct</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#this指针"><span class="nav-number">1.2.</span> <span class="nav-text">this指针</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#const成员函数"><span class="nav-number">1.3.</span> <span class="nav-text">const成员函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#构造函数"><span class="nav-number">2.</span> <span class="nav-text">构造函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#默认构造函数"><span class="nav-number">2.1.</span> <span class="nav-text">默认构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#default的含义"><span class="nav-number">2.2.</span> <span class="nav-text">=default的含义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#构造函数初始化列表"><span class="nav-number">2.3.</span> <span class="nav-text">构造函数初始化列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#委托构造函数"><span class="nav-number">2.4.</span> <span class="nav-text">委托构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#explicit关键字"><span class="nav-number">2.5.</span> <span class="nav-text">explicit关键字</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#类的拷贝赋值析构"><span class="nav-number">3.</span> <span class="nav-text">类的拷贝、赋值、析构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#类拷贝"><span class="nav-number">3.1.</span> <span class="nav-text">类拷贝</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类赋值"><span class="nav-number">3.2.</span> <span class="nav-text">类赋值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类析构"><span class="nav-number">3.3.</span> <span class="nav-text">类析构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三五法则"><span class="nav-number">3.4.</span> <span class="nav-text">三/五法则</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Gemini
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("WPxUE6YkPBut4XJcmskHhlvL-gzGzoHsz", "oCVD6rCmlv3Nx4jcOX0UiWNW");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
