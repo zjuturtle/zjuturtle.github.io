@@ -29,6 +29,8 @@ tags:
 
 那些越过的山峰，那些趟过的急流，将是你荣耀的勋章。而那些独自默默的努力，和无人能懂的付出，终归会以某一种形式，作为力量回到你的身边。
 
+{% asset_img 2b_sister.jpg %}
+
 <div id="container"></div>
 <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
