@@ -80,6 +80,3 @@ deploy:
   type: git
   repo: https://github.com/zjuturtle/zjuturtle.github.io.git
   branch: master
-
-# 头像配置
-avatar: images/avatar.png

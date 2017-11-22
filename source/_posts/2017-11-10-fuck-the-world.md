@@ -31,21 +31,6 @@ tags:
 
 {% asset_img 2b_sister.jpg %}
 
-<div id="container"></div>
-<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
-<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
-<script>
-var gitment = new Gitment({
-  id: '2017-11-10-fuck-the-world',
-  owner: 'zjuturtle',
-  repo: 'zjuturtle.github.io',
-  oauth: {
-    client_id: '310dc7cee84c0e750e97',
-    client_secret: '9d0b3c0c8cca366c8dcce3fec4607b19b8eb626e',
-  },
-})
-gitment.render('container')
-</script>
 
 
 
