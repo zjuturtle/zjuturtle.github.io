@@ -10,7 +10,7 @@ tags:
  - C++
 ---
 
-公司有一部分的 C++ 库是我编写的，但一直没有系统的测试。只是在写出来的时候随便写了点测试代码，通过就算完事，当时的测试代码也没有留下来。最近做库的扩写，顺带就想吧测试框架补上。我的 C++ 工程是用 CMake 来架构的，因此就记录一下如何用 CMake 使用 Google Test。
+公司有一部分的 C++ 库是我编写的，但一直没有系统的测试。只是在写出来的时候随便写了点测试代码，通过就算完事，当时的测试代码也没有留下来。最近做库的扩写，顺带就想把测试框架补上。我的 C++ 工程是用 CMake 来架构的，因此就记录一下如何用 CMake 使用 Google Test。
 
 <!--more-->
 
@@ -50,7 +50,7 @@ make install
 
 ## Google Test 接入
 
-假设我们的目录结构是这样的（我的库只有头文件）
+假设我们的目录结构是这样的（假设库只有头文件）
 
 ~~~tree
 src
@@ -79,6 +79,7 @@ enable_testing()
 
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIR})
+include_directories(../src/)
 add_executable(Footest example.cpp)
 target_link_libraries(Footest ${GTEST_BOTH_LIBRARIES})
 
