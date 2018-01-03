@@ -1,9 +1,9 @@
-# NexT
+<h1 align="center"><a title="New «NexT» 6.0.0 version [Reloaded]" href="https://github.com/theme-next/hexo-theme-next">NexT</a></h1>
 
-NexT is a high quality elegant [Hexo](http://hexo.io) theme. It is crafted from scratch, with love.
+<p align="center">NexT is a high quality elegant <a href="http://hexo.io">Hexo</a> theme. It is crafted from scratch, with love.</p>
 
 [![gitter-image]][gitter-url]
-[![mnt-image]][commits-url]
+[![mnt-image]](https://github.com/theme-next/hexo-theme-next)
 [![travis-image]][travis-url]
 [![rel-image]][releases-url]
 [![hexo-image]][hexo-url]
@@ -13,10 +13,10 @@ NexT is a high quality elegant [Hexo](http://hexo.io) theme. It is crafted from 
 
 ## Live Preview
 
-* Muse scheme: [XiaMo](https://notes.wanghao.work) | [OAwan](https://oawan.me) | [Hui Wang](http://hui-wang.info)
-* Mist scheme: [Jeff](https://blog.zzbd.org) | [uchuhimo](http://uchuhimo.me) | [xirong](http://www.ixirong.com)
-* Pisces scheme: [Vi](http://notes.iissnan.com) | [Acris](https://blog.mrx.one) | [Rainy](https://rainylog.com)
-* Gemini scheme: [Ivan.Nginx](https://almostover.ru) | [Alynx](http://sh.alynx.xyz) | [Raincal](https://raincal.top)
+* :heart_decoration: Muse scheme: [XiaMo](https://notes.wanghao.work) | [OAwan](https://oawan.me) | [Hui Wang](http://hui-wang.info)
+* :six_pointed_star: Mist scheme: [Jeff](https://blog.zzbd.org) | [uchuhimo](http://uchuhimo.me) | [xirong](http://www.ixirong.com)
+* :pisces: Pisces scheme: [Vi](http://notes.iissnan.com) | [Acris](https://acris.me) | [Rainy](https://rainylog.com)
+* :gemini: Gemini scheme: [Ivan.Nginx](https://almostover.ru) | [Alynx](http://sh.alynx.xyz) | [Raincal](https://raincal.top)
 
 More NexT examples [here](https://github.com/iissnan/hexo-theme-next/issues/119).
 
@@ -107,7 +107,7 @@ More NexT examples [here](https://github.com/iissnan/hexo-theme-next/issues/119)
     theme: next
 
 ### Bugs
-For those who also encounter **Error: Cannot find module 'hexo-util'** [issue](https://github.com/iissnan/hexo-theme-next/issues/1490), please check your NPM version. 
+For those who also encounter **Error: Cannot find module 'hexo-util'** [issue](https://github.com/iissnan/hexo-theme-next/issues/1490), please check your NPM version.
 
 - `> 3`: Still not work. Please remove `node_modules` directory and reinstall using `npm install`.
 - `< 3`: Please add `hexo-util` explicitly via `npm install --save-dev hexo-util` to you site package deps.
@@ -119,6 +119,12 @@ $ cd themes/next
 $ git pull
 ```
 
+### Bugs
+
+> Commit your changes or stash them before you can merge
+
+You must Commit, Stash or Discard local changes. See [here](https://stackoverflow.com/a/15745424/5861495) how to do it.
+
 ### Theme configurations using Hexo data files ([#328](https://github.com/iissnan/hexo-theme-next/issues/328))
 
 Currently, it is not smooth to update NexT theme from pulling or downloading new releases. It is quite often running into conflict status when updating NexT theme via `git pull`, or need to merge configurations manually when upgrading to new releases.
@@ -127,7 +133,7 @@ Currently, it is not smooth to update NexT theme from pulling or downloading new
 1. Configurations are splited into two pieces
 2. Users maybe confuse which place should be for options
 
-In order to resolve this issue, NexT will take advantage of Hexo [Data files](https://hexo.io/docs/data-files.html). Because Data files is introduced in Hexo 3, so you need upgrade Hexo to 3.0 (or above) to use this feature.  
+In order to resolve this issue, NexT will take advantage of Hexo [Data files](https://hexo.io/docs/data-files.html). Because Data files is introduced in Hexo 3, so you need upgrade Hexo to 3.0 (or above) to use this feature.
 
 If you prefer Hexo 2.x, you can still use the old approach for configurations. NexT is still compatible with Hexo 2.x.
 
@@ -145,18 +151,38 @@ With this feature, now you can put all your configurations into one place (`sour
 
 ## Features
 
-### Multiple languages support, including: English / Russian / French / German / Simplified Chinese / Traditional Chinese.
+### Multiple languages support, including:
+:cn: Simplified Chinese & Traditional Chinese.<br>
+:us: English<br>
+:ru: Russian<br>
+:fr: French<br>
+:de: German<br>
+:jp: Japanese<br>
+:indonesia: Indonesian<br>
+:portugal: Portuguese (Brazil)<br>
+:kr: Korean<br>
+:it: Italian<br>
+:netherlands: Dutch<br>
+:vietnam: Vietnamese
 
 Default language is English.
 
 ```yml
 language: en
 # language: zh-Hans
-# language: fr-FR
 # language: zh-hk
 # language: zh-tw
 # language: ru
+# language: fr-FR
 # language: de
+# language: ja
+# language: id
+# language: pt
+# language: pt-BR
+# language: ko
+# language: it
+# language: nl-NL
+# language: vi
 ```
 
 Set `language` field as following in site `_config.yml` to change to Chinese.
