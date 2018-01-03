@@ -80,3 +80,8 @@ deploy:
   type: git
   repo: https://github.com/zjuturtle/zjuturtle.github.io.git
   branch: master
+
+# pandoc
+pandoc:
+  template: 
+

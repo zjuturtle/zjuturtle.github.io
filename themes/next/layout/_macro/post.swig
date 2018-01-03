@@ -69,9 +69,9 @@
               {% if theme.post_meta.item_text %}
                 <span class="post-meta-item-text">{{ __('post.posted') }}</span>
               {% endif %}
-              <time title="{{ __('post.created') }}" itemprop="dateCreated datePublished" datetime="{{ moment(post.date).format() }}">
-                {{ date(post.date, config.date_format) }}
-              </time>
+              <time title="{{ __('post.created') }}" itemprop="dateCreated datePublished" datetime="{{ moment(post.date).format() }}">{#
+              #}{{ date(post.date, config.date_format) }}{#
+            #}</time>
             {% endif %}
 
             {% if theme.post_meta.created_at and theme.post_meta.updated_at %}
@@ -85,9 +85,9 @@
               {% if theme.post_meta.item_text %}
                 <span class="post-meta-item-text">{{ __('post.modified') }}&#58;</span>
               {% endif %}
-              <time title="{{ __('post.modified') }}" itemprop="dateModified" datetime="{{ moment(post.updated).format() }}">
-                {{ date(post.updated, config.date_format) }}
-              </time>
+              <time title="{{ __('post.modified') }}" itemprop="dateModified" datetime="{{ moment(post.updated).format() }}">{#
+              #}{{ date(post.updated, config.date_format) }}{#
+            #}</time>
             {% endif %}
           </span>
 
@@ -220,37 +220,38 @@
             </span>
           {% endif %}
 
-          {% if theme.post_wordcount.wordcount or theme.post_wordcount.min2read %}
+          {% if config.symbols_count_time.symbols or config.symbols_count_time.time %}
             <div class="post-wordcount">
-              {% if theme.post_wordcount.wordcount %}
-                {% if not theme.post_wordcount.separated_meta %}
-                  <span class="post-meta-divider">|</span>
-                {% endif %}
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                {% if theme.post_wordcount.item_text %}
-                  <span class="post-meta-item-text">{{ __('post.wordcount') }}&#58;</span>
-                {% endif %}
-                <span title="{{ __('post.wordcount') }}">
-                  {{ wordcount(post.content) }}
-                </span>
-              {% endif %}
-
-              {% if theme.post_wordcount.wordcount and theme.post_wordcount.min2read %}
+              {% if not theme.symbols_count_time.separated_meta %}
                 <span class="post-meta-divider">|</span>
               {% endif %}
 
-              {% if theme.post_wordcount.min2read %}
+              {% if config.symbols_count_time.symbols %}
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                {% if theme.symbols_count_time.item_text_post %}
+                  <span class="post-meta-item-text">{{ __('post.wordcount') }}&#58;</span>
+                {% endif %}
+                <span title="{{ __('post.wordcount') }}">{#
+                #}{{ symbolsCount(post.content) }}{#
+              #}</span>
+              {% endif %}
+
+              {% if config.symbols_count_time.symbols and config.symbols_count_time.time %}
+                <span class="post-meta-divider">|</span>
+              {% endif %}
+
+              {% if config.symbols_count_time.time %}
                 <span class="post-meta-item-icon">
                   <i class="fa fa-clock-o"></i>
                 </span>
-                {% if theme.post_wordcount.item_text %}
+                {% if theme.symbols_count_time.item_text_post %}
                   <span class="post-meta-item-text">{{ __('post.min2read') }} &asymp;</span>
                 {% endif %}
-                <span title="{{ __('post.min2read') }}">
-                  {{ min2read(post.content) }}
-                </span>
+                <span title="{{ __('post.min2read') }}">{#
+                #}{{ symbolsTime(post.content, theme.symbols_count_time.awl, theme.symbols_count_time.wpm) }}{#
+              #}</span>
               {% endif %}
             </div>
           {% endif %}
