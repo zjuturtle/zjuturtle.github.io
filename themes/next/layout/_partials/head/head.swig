@@ -1,7 +1,16 @@
 <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
 <meta name="theme-color" content="{{ theme.android_chrome_color }}">
+
+
+{% if theme.needmoreshare2.enable %}
+  {% set needmoreshare2_css = url_for(theme.vendors._internal + '/needsharebutton/needsharebutton.css') %}
+  {% if theme.vendors.needmoreshare2_css %}
+    {% set needmoreshare2_css = theme.vendors.needmoreshare2_css %}
+  {% endif %}
+  <link rel="stylesheet" href="{{ needmoreshare2_css }}">
+{% endif %}
 
 
 {% if theme.pace %}
@@ -63,7 +72,7 @@
   <link href="{{ fancybox_css_uri }}" rel="stylesheet" type="text/css" />
 {% endif %}
 
-{% include "./head/external-fonts.swig" %}
+{% include "./external-fonts.swig" %}
 
 {% set font_awesome_uri = url_for(theme.vendors._internal + '/font-awesome/css/font-awesome.min.css?v=4.6.2') %}
 {% if theme.vendors.fontawesome %}
@@ -71,41 +80,25 @@
 {% endif %}
 <link href="{{ font_awesome_uri }}" rel="stylesheet" type="text/css" />
 
-<link href="{{ url_for(theme.css) }}/main.css?v={{ theme.version }}" rel="stylesheet" type="text/css" />
+<link href="{{ url_for(theme.css) }}/main.css?v={{ version }}" rel="stylesheet" type="text/css" />
 
 {% if theme.favicon.apple_touch_icon %}
-  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for(theme.favicon.apple_touch_icon) }}?v={{ theme.version }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for(theme.favicon.apple_touch_icon) }}?v={{ version }}">
 {% endif %}
 {% if theme.favicon.medium %}
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for(theme.favicon.medium) }}?v={{ theme.version }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for(theme.favicon.medium) }}?v={{ version }}">
 {% endif %}
 {% if theme.favicon.small %}
-  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for(theme.favicon.small) }}?v={{ theme.version }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for(theme.favicon.small) }}?v={{ version }}">
 {% endif %}
 {% if theme.favicon.safari_pinned_tab %}
-  <link rel="mask-icon" href="{{ url_for(theme.favicon.safari_pinned_tab) }}?v={{ theme.version }}" color="{{ theme.android_chrome_color }}">
+  <link rel="mask-icon" href="{{ url_for(theme.favicon.safari_pinned_tab) }}?v={{ version }}" color="{{ theme.android_chrome_color }}">
 {% endif %}
 {% if theme.favicon.android_manifest %}
   <link rel="manifest" href="{{ url_for(theme.favicon.android_manifest) }}">
 {% endif %}
 {% if theme.favicon.ms_browserconfig %}
   <meta name="msapplication-config" content="{{ url_for(theme.favicon.ms_browserconfig) }}" />
-{% endif %}
-
-{% if page.keywords %}
-  <meta name="keywords" content="{{ page.keywords }}" />
-{% elif page.tags and page.tags.length %}
-  <meta name="keywords" content="{% for tag in page.tags %}{{ tag.name }},{% endfor %}" />
-{% elif theme.keywords %}
-  <meta name="keywords" content="{{ theme.keywords }}" />
-{% endif %}
-
-
-{% if theme.rss === '' and config.feed and config.feed.path %}
-  {% set theme.rss = config.feed.path %}
-{% endif %}
-{% if theme.rss %}
-  <link rel="alternate" href="{{ url_for(theme.rss) }}" title="{{ config.title }}" type="application/atom+xml" />
 {% endif %}
 
 
@@ -115,33 +108,19 @@
 {% endif %}
 
 
-{{
-  open_graph({
-    twitter_id: theme.twitter,
-    google_plus: theme.google_plus,
-    fb_admins: theme.fb_admins,
-    fb_app_id: theme.fb_app_id
-  })
-}}
-
-
 {# Export some HEXO Configurations to Front-End #}
 <script type="text/javascript" id="hexo.configurations">
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '{{ theme.root }}',
     scheme: '{{ theme.scheme }}',
-    version: '{{ theme.version }}',
+    version: '{{ version }}',
     sidebar: {{ theme.sidebar | json_encode }},
     fancybox: {{ theme.fancybox }},
     fastclick: {{ theme.fastclick }},
     lazyload: {{ theme.lazyload }},
     tabs: {{ theme.tabs.enable }},
     motion: {{ theme.motion | json_encode }},
-    duoshuo: {
-      userId: '{{ theme.duoshuo_info.user_id | default() }}',
-      author: '{{ theme.duoshuo_info.admin_nickname | default(__('author'))}}'
-    },
     algolia: {
       applicationID: '{{ theme.algolia.applicationID }}',
       apiKey: '{{ theme.algolia.apiKey }}',
@@ -152,9 +131,9 @@
   };
 </script>
 
-{# Canonical, good for google search engine (SEO) : https://support.google.com/webmasters/answer/139066 #}
-{% if theme.canonical %}
-  <link rel="canonical" href="{{ config.url }}/{{ page.canonical_path.replace('index.html', '') }}"/>
+{% if theme.custom_file_path.head %}
+  {% set custom_head = '../../../../../' + theme.custom_file_path.head %}
+{% else %}
+  {% set custom_head = '../../_custom/head.swig' %}
 {% endif %}
-
-{% include 'head/custom-head.swig' %}
+{% include custom_head %}

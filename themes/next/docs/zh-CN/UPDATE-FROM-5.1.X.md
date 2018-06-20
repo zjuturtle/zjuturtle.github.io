@@ -12,7 +12,7 @@
     1. `config.yml` 或 `next.yml`（如果你使用了[数据文件](DATA-FILES.md)）。
     2. 自定义的 CSS 配置，它们应在 `next/source/css/_custom/*` 和 `next/source/css/_variables/*` 中。
     3. 自定义的排布配置，它们应在 `next/layout/_custom/*` 中。
-    4. 任何其它可能的附加自定义内容；为了定位它们，你可以通过某些工具在仓库间比较。例如，使用 [Beyond Compare](https://github.com/ivan-nginx/beyond-compare)。
+    4. 任何其它可能的附加自定义内容；为了定位它们，你可以通过某些工具在仓库间比较。
 2. 克隆新的 v6.x 仓库到任一异于 `next` 的目录（如 `next-reloaded`）：
     ```sh
     $ git clone https://github.com/theme-next/hexo-theme-next themes/next-reloaded
@@ -26,4 +26,4 @@
     ```
     如此，你的 `next-reloaded` 主题将在生成站点时被加载。如果你遇到了任何错误、或只是不喜欢这一新版本，你可以随时切换回旧的 v5.1.x 版本。
 
-关于第三方库的启用，参见[这里](https://github.com/theme-next/hexo-theme-next/blob/master/docs/cn/INSTALLATION.md#插件)。
+关于第三方库的启用，参见[这里](https://github.com/theme-next/hexo-theme-next/blob/master/docs/zh-CN/INSTALLATION.md#插件)。
