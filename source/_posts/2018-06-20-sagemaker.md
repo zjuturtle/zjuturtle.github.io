@@ -1,5 +1,5 @@
 ---
-title: sagemaker
+title: SageMaker 使用笔记
 date: 2018-06-20 20:00:12
 categories:
  - Algorithm
