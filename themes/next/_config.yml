@@ -543,7 +543,7 @@ gitalk:
   clientSecret: edf722e9512cfd1d793d03f5e32c41bb2c4a4d38
   repo: Gitalk
   owner: AnotherZjuturtle
-  admin: zjuturtle, AnotherZjuturtle
+  admin: AnotherZjuturtle
   pagerDirection: first
 
 # Baidu Share
