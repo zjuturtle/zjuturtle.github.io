@@ -541,7 +541,7 @@ gitalk:
   enable: true
   clientID: 08e86c9d0536ed791bf9
   clientSecret: edf722e9512cfd1d793d03f5e32c41bb2c4a4d38
-  repo: https://github.com/AnotherZjuturtle/Gitalk
+  repo: Gitalk
   owner: AnotherZjuturtle
   admin: zjuturtle, AnotherZjuturtle
   pagerDirection: first
