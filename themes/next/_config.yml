@@ -535,6 +535,17 @@ gitment:
   proxy_gateway: # Address of api proxy, See: https://github.com/aimingoo/intersect
   redirect_protocol: # Protocol of redirect_uri with force_redirect_protocol when mint enabled
 
+# Gitalk
+# more info please open https://github.com/gitalk/gitalk
+gitalk:
+  enable: true
+  clientID: 08e86c9d0536ed791bf9
+  clientSecret: edf722e9512cfd1d793d03f5e32c41bb2c4a4d38
+  repo: https://github.com/AnotherZjuturtle/Gitalk
+  owner: AnotherZjuturtle
+  admin: zjuturtle, AnotherZjuturtle
+  pagerDirection: first
+
 # Baidu Share
 # Available value:
 #    button | slide
@@ -965,6 +976,8 @@ vendors:
   # valine comment
   # Example: https://cdn.jsdelivr.net/npm/valine@1.1.8/dist/Valine.min.js
   valine:
+
+
 
 
 # Assets
