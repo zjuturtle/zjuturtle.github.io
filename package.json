@@ -17,6 +17,6 @@
     "hexo-renderer-pandoc": "^0.2.1",
     "hexo-renderer-stylus": "^0.3.1",
     "hexo-server": "^0.2.0",
-    "md5": "^2.2.1",
+    "md5": "^2.2.1"
   }
 }
