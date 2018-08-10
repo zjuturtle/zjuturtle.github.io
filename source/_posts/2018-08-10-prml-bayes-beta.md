@@ -1,12 +1,9 @@
 ---
-title: prml-bayes-beta
+title: PRML笔记 - 贝叶斯与 Beta 分布
 date: 2018-08-10 15:47:53
 categories:
  - Algorithm
 tags: 
- - PRML
- - Beta
- - 贝叶斯
 ---
 
 这篇是关于贝叶斯的第二部分。主要讲讲 Beta 分布。
@@ -54,7 +51,7 @@ $$\begin{split}&\int^{\infty}_0e^{-x}x^{a-1}dx\int^{\infty}_0e^{-y}y^{b-1}dy\\\ 
 
 这里需要交换 $dx$ 与 $dt$ 的积分顺序，我们画个图帮助理解一下。积分的范围是图中的阴影部分，即原本的式子是先在 $t$ 方向上积分，从 $x$ 积分到 $\infty$，再在 $x$ 方向上积分，从 0 积分到 $\infty$。交换一下积分顺序，先在 $x$ 方向上积分，从 0 积分到 $t$，再在 $t$ 方向上积分，从 0 积分到 $\infty$
 
-![791533539489_.pi](media/15331929024399/791533539489_.pic.jpg)
+{% asset_img int.jpg %}
 
 那么我们接着推公式，且记 $x=t \mu$
 
@@ -113,6 +110,6 @@ $$p(D|\mu)=\prod_{k=1}^K{\mu}^{m_k}$$
 
 对应的共轭先验为狄利克雷分布
 
-$$Dir(\boldsymbol{\mu|\boldsymbol{\alpha}})=\frac{\Gamma(\sum_{k=1}^K {\alpha}_k)}{\Gamma({\alpha}_1)...\Gamma({\alpha}_K)}\prod^K_{k=1}{{\mu}_k}^{{\alpha}_k-1}$$
+$$ Dir(\boldsymbol{\mu}|\boldsymbol{\alpha})=\frac{\Gamma(\sum_{k=1}^K {\alpha}_k)}{\Gamma({\alpha}_1)...\Gamma({\alpha}_K)}\prod^K_{k=1} {\mu}_k^{\alpha_k-1}$$
 
-同样可以应用顺序方法，每观测到一个新的值，就可以去更新 $\boldsymbol{\alpha}$。
+同样可以应用顺序方法，每观测到一个新的值，就可以去更新参数 $\boldsymbol{\alpha}$。
