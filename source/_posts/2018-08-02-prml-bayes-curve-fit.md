@@ -30,6 +30,7 @@ $$P(Y|X)=\frac{P(X|Y)P(Y)}{P(X)}$$
 $$ p(\boldsymbol{w} | \boldsymbol{D}) = \frac{p(\boldsymbol{D} | \boldsymbol{w})p(\boldsymbol{w})}{p(\boldsymbol{D})}$$
 
 解释一下公式里各项的含义
+
 * $p(\boldsymbol{D})$ 即为后验概率。
 * $p(\boldsymbol{w})$ 为先验概率，包含了在观测到数据前关于 $\boldsymbol{w}$ 的一些假设。
 * $p(\boldsymbol{D} | \boldsymbol{w})$ 由观测数据集 $\boldsymbol{D}$，可以认为是 $\boldsymbol{w}$ 的函数，也被称为似然函数。表达了在不同 $\boldsymbol{w}$ 下，观测数据出现的可能性大小。注意它不是 $\boldsymbol{w}$ 的概率分布，因此它关于 $\boldsymbol{w}$ 的积分一般不为 1
