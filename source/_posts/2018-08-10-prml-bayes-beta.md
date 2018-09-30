@@ -4,6 +4,8 @@ date: 2018-08-10 15:47:53
 categories:
  - Algorithm
 tags: 
+ - PRML
+ - 贝叶斯
 ---
 
 这篇是关于贝叶斯的第二部分。主要讲讲 Beta 分布。

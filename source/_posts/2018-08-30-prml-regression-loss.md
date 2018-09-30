@@ -1,14 +1,14 @@
 ---
-title: 回归损失函数
-date: 2018-08-29 13:53:21
+title: PRML笔记 - 回归损失函数
+date: 2018-08-30 11:21:14
 categories:
  - Algorithm
 tags:
  - PRML
- - regression loss
---- 
+ - regression
+---
 
-这篇记录了一下回归损失函数的推导过程，主要是 PRML 的式 1.88 和式 1.90。我在 Google 上搜了过 1.88 的推导。有一些中文博客的推导，不过写的什么 J8 玩意，看着推导的时候被带到沟里去了。最后找了[stackexchange](https://math.stackexchange.com/questions/2130282/bishop-ml-and-pattern-recognition-calculus-of-variations-linear-regression-loss) 以及这里[stackexchange](https://stats.stackexchange.com/questions/228561/loss-functions-for-regression-proof) 才算得到完美解答。
+这篇记录了一下回归损失函数的推导过程，主要是 PRML 的式 1.88 和式 1.90。我在 Google 上搜了过 1.88 的推导。有一些中文博客的推导，不过写的什么 J8 玩意，看着推导的时候被带到沟里去了。最后找了 [stackexchange](https://math.stackexchange.com/questions/2130282/bishop-ml-and-pattern-recognition-calculus-of-variations-linear-regression-loss) 以及这里[stackexchange](https://stats.stackexchange.com/questions/228561/loss-functions-for-regression-proof) 才算得到完美解答。
 
 <!--more-->
 
