@@ -52,6 +52,7 @@
    {% elseif theme.gitalk.enable %}
     <div id="gitalk-container"></div>
     <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+    </div>
   {% endif %}
 
 {% endif %}
