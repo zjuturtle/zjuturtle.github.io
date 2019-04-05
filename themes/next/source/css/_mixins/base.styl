@@ -68,20 +68,12 @@ circle() {
   border-radius: 50%;
 }
 
-transform() {
-  -webkit-transform: arguments
-  -moz-transform: arguments
-  -ms-transform: arguments
-  -o-transform: arguments
-  transform: arguments
-}
-
 hide() {
-  display: none !important;
+  display: none;
 }
 
 show() {
-  display: block !important;
+  display: block;
 }
 
 fixbutton() {
@@ -101,4 +93,18 @@ clearfix() {
     display: table;
   }
   &:after { clear: both; }
+}
+
+word-wrap() {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+disable-touch-hover() {
+  // To prevent hover on external links with touch devices after click.
+  @media (hover:none) {
+    &:hover {
+      background: none;
+    }
+  }
 }

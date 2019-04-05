@@ -6,6 +6,7 @@
 title: zjuturtle's blog
 subtitle:
 description: 瞎几把搞的幸运E
+keywords:
 author: zjuturtle
 language: zh-Hans
 timezone:
@@ -34,7 +35,7 @@ titlecase: false # Transform title into titlecase
 external_link: true # Open external links in new tab
 filename_case: 0
 render_drafts: false
-post_asset_folder: true
+post_asset_folder: false
 relative_link: false
 future: true
 highlight:
@@ -74,14 +75,25 @@ pagination_dir: page
 ## Themes: https://hexo.io/themes/
 theme: next
 
+# LeanCloud counter
+leancloud_counter_security:
+  enable_sync: true
+  app_id: WPxUE6YkPBut4XJcmskHhlvL-gzGzoHsz
+  app_key: oCVD6rCmlv3Nx4jcOX0UiWNW
+  username: zjuturtle
+  password:
+
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
-  type: git
-  repo: https://github.com/zjuturtle/zjuturtle.github.io.git
-  branch: master
+  - type: leancloud_counter_security_sync
+  - type: git
+    repo: https://github.com/zjuturtle/zjuturtle.github.io.git
+    branch: master
 
-# pandoc
 pandoc:
+  filters:
+  extra:
   template: 
-
+  meta:
+  mathEngine:

@@ -1,5 +1,5 @@
 ---
-title: PRML - 线性回归
+title: PRML笔记 - 线性回归
 date: 2018-09-30 11:38:31
 categories:
  - Algorithm
