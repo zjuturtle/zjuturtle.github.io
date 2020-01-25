@@ -11,7 +11,7 @@ SSL 相关设置在 [cloudflare](https://www.cloudflare.com/)，域名在[阿里
 3. 下载最新版本的 [pandoc](https://github.com/jgm/pandoc/releases/)
 4. 在一个空的文件夹执行 `hexo init .`，同时把 Next 主题和之前的 source 文件夹复制进去，再放回根目录
 5. 在根目录执行 `npm uninstall hexo-renderer-marked --save` 卸载 hexo 自带的公式渲染器
-6. 在根目录执行 `npm uninstall hexo-renderer-marked --save` 安装 pandoc 渲染器
+6. 在根目录执行 `npm install hexo-renderer-pandoc --save` 安装 pandoc 渲染器
 7. 在根目录执行 `npm install hexo-deployer-git --save`
 8. 在根目录执行 `npm install hexo-leancloud-counter-security --save`，参考[这里](https://github.com/theme-next/hexo-theme-next/blob/master/docs/zh-CN/LEANCLOUD-COUNTER-SECURITY.md)
 9. 在根目录执行 `npm install gitalk --save`，参考[这里](https://github.com/gitalk/gitalk)
@@ -71,7 +71,7 @@ favicon:
 scheme: Gemini
 
 social:
-  GitHub: https://github.com/zjuturtle
+  GitHub: https://github.com/zjuturtle || github
   E-Mail: mailto:leijinghaog@gmail.com || envelope
   
 avatar:
@@ -110,7 +110,7 @@ leancloud_visitors:
   security: true
   betterPerformance: true
   
-# Tencent analytics ID
+# Tencent analytics ID 这个新版本好像没了
 tencent_analytics: 61683784
 
 # Gitalk
@@ -130,11 +130,3 @@ gitalk_js: //cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js
 gitalk_css: //cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css
 md5: //cdn.jsdelivr.net/npm/js-md5@0/src/md5.min.js
 ```
-
-
-
-
-
-
-    
-
