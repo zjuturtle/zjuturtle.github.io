@@ -43,5 +43,7 @@
 {"title":"JNI 的多线程回调","url":"/2020/01/25/jni-multithread-callback/"},
 {"title":"Transformer 模型笔记","url":"/2020/01/25/transformer/"},
 {"title":"FBank与MFCC 计算","url":"/2020/03/06/fbank-mfcc/"},
+{"title":"DTW 算法简介","url":"/2020/03/07/dtw/"},
 {"title":"维特比解码算法","url":"/2020/03/07/viterbi/"},
+{"title":"N-gram 与 Viterbi 算法","url":"/2020/03/16/n-gram-viterbi/"},
 ]
