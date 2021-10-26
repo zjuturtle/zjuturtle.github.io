@@ -8,6 +8,7 @@ tags:
  - HMM
  - vierbi
  - N-gram
+ - ASR
  - 维特比算法
 ---
 
