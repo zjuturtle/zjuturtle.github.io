@@ -17,7 +17,7 @@ SSL 相关设置在 [cloudflare](https://www.cloudflare.com/)，域名在[阿里
 9. 修改最外层的 `_config.yml` 文件
 10. 修改 `themes/next/_config.yml` 文件
 11. 在根目录执行 `hexo clean && hexo server` 测试一下
-12. `hexo deploy --generate` 部署，密码在 Lastpass 的私人服务器里面。可能需要修改 `themes/next/layout/_third-party/comments/gitalk.swig` 文件，使得它能正常激活评论
+12. `hexo deploy --generate` 部署，密码在 1password 的私人服务器里面。可能需要修改 `themes/next/layout/_third-party/comments/gitalk.swig` 文件，使得它能正常激活评论
 13. 访问 [Github](https://github.com/zjuturtle/zjuturtle.github.io/settings) 修改成自己的域名
 14. 切换 AnotherZjuturtle 账号初始化评论
 
