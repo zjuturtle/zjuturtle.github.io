@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="这篇是关于贝叶斯的第二部分。主要讲讲 Beta 分布。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PRML笔记 - 贝叶斯与 Beta 分布">
+<meta property="og:url" content="https://zjuturtle.com/2018/08/10/prml-bayes-beta/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="这篇是关于贝叶斯的第二部分。主要讲讲 Beta 分布。">
+<meta property="og:locale">
+<meta property="og:image" content="https://zjuturtle.com/2018/08/10/prml-bayes-beta/int.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/08/10/prml-bayes-beta/beta.png">
+<meta property="og:image" content="https://zjuturtle.com/2018/08/10/prml-bayes-beta/posterior.png">
+<meta property="article:published_time" content="2018-08-10T07:47:53.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.647Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="PRML">
+<meta property="article:tag" content="贝叶斯">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zjuturtle.com/2018/08/10/prml-bayes-beta/int.jpg">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2018/08/10/prml-bayes-beta/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2018/08/10/prml-bayes-beta/","path":"2018/08/10/prml-bayes-beta/","title":"PRML笔记 - 贝叶斯与 Beta 分布"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>PRML笔记 - 贝叶斯与 Beta 分布 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%AF%E5%8A%AA%E5%88%A9%E5%88%86%E5%B8%83"><span class="nav-number">1.</span> <span class="nav-text">伯努利分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#beta-%E5%88%86%E5%B8%83"><span class="nav-number">2.</span> <span class="nav-text">Beta 分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#beta-%E5%88%86%E5%B8%83%E4%B8%8E%E9%A1%BA%E5%BA%8F%E6%96%B9%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">Beta 分布与顺序方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A8%E5%B9%BF%E5%88%B0%E5%A4%9A%E9%A1%B9%E5%BC%8F%E5%8F%98%E9%87%8F"><span class="nav-number">4.</span> <span class="nav-text">推广到多项式变量</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2018/08/10/prml-bayes-beta/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PRML笔记 - 贝叶斯与 Beta 分布
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-08-10 15:47:53" itemprop="dateCreated datePublished" datetime="2018-08-10T15:47:53+08:00">2018-08-10</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>这篇是关于贝叶斯的第二部分。主要讲讲 Beta 分布。</p>
+<span id="more"></span>
+<h2 id="伯努利分布">伯努利分布</h2>
+<p>我们考虑一个简单的伯努利分布，即抛一枚不均匀的硬币，<span class="math inline">\(x=1\)</span> 表示正面，<span class="math inline">\(x=0\)</span> 表示反面，<span class="math inline">\(x=1\)</span> 的概率被记为 <span class="math inline">\(\mu\)</span>。</p>
+<p><span class="math display">\[Bern(x|\mu ) = {\mu}^x{(1-\mu )}^{1-x}\]</span></p>
+<p>假设我们已经有针对随机变量 <span class="math inline">\(x\)</span> 的一系列观测 <span class="math inline">\(D={x_1, x_2, ..., x_n}\)</span>，那么可以得到关于 <span class="math inline">\(\mu\)</span> 的似然函数如下</p>
+<p><span class="math display">\[p(D|\mu)=\prod_{n=1}^N \mu^{x_n}(1-\mu)^{1-x_n}\]</span></p>
+<p><span class="math display">\[\ln p(D|\mu)=\sum^N_{n=1}\{x_n \ln \mu+(1-x_n) \ln(1-\mu)\}\]</span></p>
+<p>应用极大似然法，令 <span class="math inline">\(\ln p(D|\mu)\)</span> 关于 <span class="math inline">\(\mu\)</span> 的导数为0，估计其参数 <span class="math inline">\(\mu\)</span> 的结果为</p>
+<p><span class="math display">\[{\mu}_{ML} = \frac{1}{N}\sum^{N}_{n=1}x_n\]</span></p>
+<p>实际上极大似然法是有缺陷的。假设我们抛了 3 次硬币，每次都是正面。那么根据极大似然法得到的对于 <span class="math inline">\(\mu\)</span> 的估计就是 1。这显然就是瞎扯淡，我们需要加入一个先验来修正这一点。</p>
+<h2 id="beta-分布">Beta 分布</h2>
+<p>我们对 <span class="math inline">\(\mu\)</span> 给定一个 Beta 分布的先验信息如下</p>
+<p><span class="math display">\[Beta(\mu|a,b)=\frac{\Gamma(a+b)}{\Gamma(a) \Gamma(b)}{\mu}^{a-1}(1-\mu)^{b-1}\]</span></p>
+<p><span class="math display">\[\Gamma(x)= \int^{\infty}_0{\mu}^{x-1}e^{-u}du\]</span></p>
+<p>前面的 <span class="math inline">\(\frac{\Gamma(a+b)}{\Gamma(a) \Gamma(b)}\)</span> 用于确保 Beta 分布被正确的归一化，即保证了 <span class="math inline">\(\int^{\infty}_{-\infty} Beta(\mu|a,b)d \mu=\int^1_0 Beta(\mu|a,b)d \mu=1\)</span>。我其实还蛮好奇这个莫名其妙的系数是怎么来的，虽然 PRML 上没提到，我稍微做了点探索。我们把式子中的 <span class="math inline">\(\Gamma(a) \Gamma(b)\)</span> 写出来瞅瞅。</p>
+<p><span class="math display">\[\Gamma(a) \Gamma(b)=\int^{\infty}_0e^{-x}x^{a-1}dx\int^{\infty}_0e^{-y}y^{b-1}dy\]</span></p>
+<p>我们令 <span class="math inline">\(t=x+y\)</span>，则有</p>
+<p><span class="math display">\[\begin{split}\Gamma(b) =&amp; \int^{\infty}_0e^{-y}y^{b-1}dy \\\
+=&amp;\int^{\infty}_x e^{x-t}(t-x)^{b-1}dt \end{split}\]</span></p>
+<p>带入回到原来的式子</p>
+<p><span class="math display">\[\begin{split}&amp;\int^{\infty}_0e^{-x}x^{a-1}dx\int^{\infty}_0e^{-y}y^{b-1}dy\\\ =&amp;\int^{\infty}_0e^{-x}x^{a-1}dx\int^{\infty}_x e^{x-t}(t-x)^{b-1}dt \\\ =&amp;\int^{\infty}_0 x^{a-1} \left\{ \int^{\infty}_{x}e^{-t}(t-x)^{b-1}dt \right\}dx \\\ =&amp;\int^{\infty}_0 \int^{\infty}_x e^{-t}  x^{a-1}(t-x)^{b-1}dt  dx  \end{split}\]</span></p>
+<p>这里需要交换 <span class="math inline">\(dx\)</span> 与 <span class="math inline">\(dt\)</span> 的积分顺序，我们画个图帮助理解一下。积分的范围是图中的阴影部分，即原本的式子是先在 <span class="math inline">\(t\)</span> 方向上积分，从 <span class="math inline">\(x\)</span> 积分到 <span class="math inline">\(\infty\)</span>，再在 <span class="math inline">\(x\)</span> 方向上积分，从 0 积分到 <span class="math inline">\(\infty\)</span>。交换一下积分顺序，先在 <span class="math inline">\(x\)</span> 方向上积分，从 0 积分到 <span class="math inline">\(t\)</span>，再在 <span class="math inline">\(t\)</span> 方向上积分，从 0 积分到 <span class="math inline">\(\infty\)</span></p>
+<img src="/2018/08/10/prml-bayes-beta/int.jpg" class="">
+<p>那么我们接着推公式，且记 <span class="math inline">\(x=t \mu\)</span></p>
+<p><span class="math display">\[\begin{split} &amp;\int^{\infty}_0 \int^{\infty}_x e^{-t}  x^{a-1}(t-x)^{b-1}dt  dx \\ =&amp; \int^{\infty}_0 \int^t_0 e^{-t}  x^{a-1}(t-x)^{b-1} dx dt \\ =&amp; \int^{\infty}_0 \int^1_0 e^{-t}  (t \mu)^{a-1}(t-t \mu )^{b-1} d \mu dt \\ =&amp; \int^{\infty}_0e^{-t}t^{a+b-1}dt \int^1_0 \mu^{a-1}(1-\mu)^{b-1}d\mu \\ =&amp; \Gamma(a+b)\int^1_0 \mu^{a-1}(1-\mu)^{b-1}d\mu \end{split}\]</span></p>
+<p>总结一下，就是</p>
+<p><span class="math display">\[ \Gamma(a) \Gamma(b) = \Gamma(a+b)\int^1_0 \mu^{a-1}(1-\mu)^{b-1}d\mu \]</span></p>
+<p>回到最开始的式子，容易有</p>
+<p><span class="math display">\[\begin{split} \int^1_0Beta(\mu|a,b)d\mu =&amp; \int_0^1 \frac{\Gamma(a+b)}{\Gamma(a) \Gamma(b)}{\mu}^{a-1}(1-\mu)^{b-1}d \mu \\ =&amp;\frac{\Gamma(a+b)}{\Gamma(a) \Gamma(b)} \int^1_0 {\mu}^{a-1}(1-\mu)^{b-1}d \mu \\ =&amp; 1 \end{split}\]</span></p>
+<p>Beta 分布的均值和方差为</p>
+<p><span class="math display">\[E[\mu] =  \frac{a}{a+b} \\ var[\mu]=\frac{ab}{(a+b)^2(a+b+1)}\]</span></p>
+<p>参数 <span class="math inline">\(a,b\)</span> 控制了参数 <span class="math inline">\(\mu\)</span> 的（先验）概率分布，所以也称之为超参数。直接拿了几张 PRML 里的图展示一下不同 <span class="math inline">\(a,b\)</span> 对应的 Beta 分布图像</p>
+<img src="/2018/08/10/prml-bayes-beta/beta.png" class="">
+<h2 id="beta-分布与顺序方法">Beta 分布与顺序方法</h2>
+<p>在刚开始看 Beta 分布的时候我很好奇，为什么要用这样一个分布去当先验，用高斯不好么。后来才发现用 Beta 分布可以应用顺序方法，因为 Beta 分布是伯努利似然函数的共轭先验（通俗点说就是 Beta 分布乘以似然函数还是一个 Beta 分布）。</p>
+<p>设我们现在抛了 <span class="math inline">\(N\)</span> 次硬币，有 <span class="math inline">\(m\)</span> 次正面朝上，<span class="math inline">\(l\)</span> 次反面朝上。我们把 Beta 先验乘以二项似然函数，去掉前面与 <span class="math inline">\(\mu\)</span> 无关的系数，有</p>
+<p><span class="math display">\[\begin{split} &amp;\frac{\Gamma(a+b)}{\Gamma(a) \Gamma(b)}{\mu}^{a-1}(1-\mu)^{b-1} {\mu}^m{(1-\mu )}^l \\=&amp;\frac{\Gamma(a+b)}{\Gamma(a) \Gamma(b)}{\mu}^{m+a-1}(1-\mu)^{l+b-1} \\ \propto&amp;{\mu}^{m+a-1}(1-\mu)^{l+b-1} \end{split}\]</span></p>
+<p>实际上，这个后验概率还是 Beta 分布的形式，我们根据之前的推导可以得到它的归一化系数。</p>
+<p><span class="math display">\[p(\mu | m,l,a,b)=\frac{\Gamma(m+a+l+b)}{\Gamma(m+a)\Gamma(l+b)}{\mu}^{m+a-1}(1-\mu)^{l+b-1}\]</span></p>
+<p>可以这么理解，在原来的先验基础上，观察到 <span class="math inline">\(m\)</span> 次正面朝上，意味着 Beta 分布的 <span class="math inline">\(a\)</span> 增加了 <span class="math inline">\(m\)</span>，观察到 <span class="math inline">\(l\)</span> 次反面朝上，Beta 分布的 <span class="math inline">\(b\)</span> 增加了 <span class="math inline">\(l\)</span>。直接抄一个 PRML 上面的例子。先验的 Beta 分布参数 <span class="math inline">\(a=b=2\)</span>，观察到一次正面朝上，后验概率就是 <span class="math inline">\(Beta(\mu|a=3,b=2)\)</span></p>
+<img src="/2018/08/10/prml-bayes-beta/posterior.png" class="">
+<p>一个自然的想法就是顺序方法。我们不再一次性读入所有的观测数据，而是一次读入一个，逐渐更新概率分布。</p>
+<h2 id="推广到多项式变量">推广到多项式变量</h2>
+<p>对于有 <span class="math inline">\(K\)</span> 个状态的随机变量，它其实是二元变量的自然推广。我们约定如下的变量表示方法：对于 <span class="math inline">\(K=6\)</span>，如果取到了第 3 个状态，则状态量 <span class="math inline">\(\boldsymbol{x}\)</span> 表达如下</p>
+<p><span class="math display">\[\boldsymbol{x}=(0,0,1,0,0,0)^T\]</span></p>
+<p>需要满足 <span class="math inline">\(\sum_{k=1}^Kx_k=1\)</span>。参数 <span class="math inline">\(\mu_k\)</span> 表示 <span class="math inline">\(x_k=1\)</span> 的概率，那么我们可以用列向量 <span class="math inline">\(\boldsymbol{\mu}\)</span> 来表达取到各个状态的概率，<span class="math inline">\(\boldsymbol{\mu}=(\mu_1,...,\mu_K)^T\)</span>。需要满足 <span class="math inline">\(\mu_k \geq 0\)</span> 和 <span class="math inline">\(\sum_{k=1}^Kx_k=1\)</span>。我们略去推到过程，直接给出结论。</p>
+<p>假设我们有 <span class="math inline">\(m_1+m_2+...+m_K=N\)</span> 次观测，<span class="math inline">\(m_k\)</span> 为状态 <span class="math inline">\(k\)</span> 的观测次数。多项式分布的形式为</p>
+<p><span class="math display">\[Mult(m_1, m_2,...,m_K|\boldsymbol{\mu},N)=\frac{N!}{m_1!m_2!...m_K!}\prod_{k=1}^{K}{\mu_k}^{m_k}\]</span></p>
+<p>对于有 <span class="math inline">\(N\)</span> 个独立观测 <span class="math inline">\(\boldsymbol{x}_1,...,\boldsymbol{x}_N\)</span> 的数据集 <span class="math inline">\(D\)</span>，设 <span class="math inline">\(m_k\)</span> 为观测到 <span class="math inline">\(x_k=1\)</span> 的次数。则它的似然函数为</p>
+<p><span class="math display">\[p(D|\mu)=\prod_{k=1}^K{\mu}^{m_k}\]</span></p>
+<p>对应的共轭先验为狄利克雷分布</p>
+<p><span class="math display">\[ Dir(\boldsymbol{\mu}|\boldsymbol{\alpha})=\frac{\Gamma(\sum_{k=1}^K {\alpha}_k)}{\Gamma({\alpha}_1)...\Gamma({\alpha}_K)}\prod^K_{k=1} {\mu}_k^{\alpha_k-1}\]</span></p>
+<p>同样可以应用顺序方法，每观测到一个新的值，就可以去更新参数 <span class="math inline">\(\boldsymbol{\alpha}\)</span>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/PRML/" rel="tag"># PRML</a>
+              <a href="/tags/%E8%B4%9D%E5%8F%B6%E6%96%AF/" rel="tag"># 贝叶斯</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/08/02/prml-bayes-curve-fit/" rel="prev" title="PRML笔记 - 贝叶斯多项式曲线拟合">
+                  <i class="fa fa-chevron-left"></i> PRML笔记 - 贝叶斯多项式曲线拟合
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/08/16/prml-bayes-gaussian/" rel="next" title="PRML笔记 - 高斯分布的贝叶斯共轭先验">
+                  PRML笔记 - 高斯分布的贝叶斯共轭先验 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"4b5c55d5fe47af72bf6d47f3d06dbafe"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

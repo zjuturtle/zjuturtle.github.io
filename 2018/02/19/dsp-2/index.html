@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="第二部分主要是 z 变换相关内容。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="信号处理笔记（二）">
+<meta property="og:url" content="https://zjuturtle.com/2018/02/19/dsp-2/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="第二部分主要是 z 变换相关内容。">
+<meta property="og:locale">
+<meta property="og:image" content="https://zjuturtle.com/2018/02/19/dsp-2/z_s_plane.jpg">
+<meta property="article:published_time" content="2018-02-19T05:27:47.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.644Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="DSP">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zjuturtle.com/2018/02/19/dsp-2/z_s_plane.jpg">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2018/02/19/dsp-2/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2018/02/19/dsp-2/","path":"2018/02/19/dsp-2/","title":"信号处理笔记（二）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>信号处理笔记（二） | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#z-%E5%8F%98%E6%8D%A2%E5%AE%9A%E4%B9%89"><span class="nav-number">1.</span> <span class="nav-text">z 变换定义</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#z-%E5%8F%98%E6%8D%A2%E4%B8%8E%E6%8B%89%E6%99%AE%E6%8B%89%E6%96%AF%E5%8F%98%E6%8D%A2"><span class="nav-number">1.1.</span> <span class="nav-text">z 变换与拉普拉斯变换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#z-%E5%B9%B3%E9%9D%A2%E5%92%8C-s-%E5%B9%B3%E9%9D%A2"><span class="nav-number">1.2.</span> <span class="nav-text">z 平面和 s 平面</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#z-%E5%8F%98%E6%8D%A2%E7%9A%84%E6%94%B6%E6%95%9B%E5%9F%9F"><span class="nav-number">2.</span> <span class="nav-text">z 变换的收敛域</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B1"><span class="nav-number">2.1.</span> <span class="nav-text">例1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B2"><span class="nav-number">2.2.</span> <span class="nav-text">例2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B3"><span class="nav-number">2.3.</span> <span class="nav-text">例3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E4%B8%8E-roc-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">2.4.</span> <span class="nav-text">序列与 ROC 的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%89%E9%99%90%E9%95%BF%E5%BA%8F%E5%88%97"><span class="nav-number">2.4.1.</span> <span class="nav-text">有限长序列</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%B3%E8%BE%B9%E5%BA%8F%E5%88%97"><span class="nav-number">2.4.2.</span> <span class="nav-text">右边序列</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B7%A6%E8%BE%B9%E5%BA%8F%E5%88%97"><span class="nav-number">2.4.3.</span> <span class="nav-text">左边序列</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%8C%E8%BE%B9%E5%BA%8F%E5%88%97"><span class="nav-number">2.4.4.</span> <span class="nav-text">双边序列</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#z-%E5%8F%98%E6%8D%A2%E7%9A%84%E6%80%A7%E8%B4%A8"><span class="nav-number">3.</span> <span class="nav-text">z 变换的性质</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E6%80%A7"><span class="nav-number">3.1.</span> <span class="nav-text">线性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%B6%E7%A7%BB%E6%80%A7%E8%B4%A8"><span class="nav-number">3.2.</span> <span class="nav-text">时移性质</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E6%9D%83%E6%80%A7%E8%B4%A8"><span class="nav-number">3.3.</span> <span class="nav-text">加权性质</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%B6%E5%9F%9F%E5%8D%B7%E7%A7%AF%E6%80%A7%E8%B4%A8"><span class="nav-number">3.4.</span> <span class="nav-text">时域卷积性质</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2018/02/19/dsp-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          信号处理笔记（二）
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-02-19 13:27:47" itemprop="dateCreated datePublished" datetime="2018-02-19T13:27:47+08:00">2018-02-19</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>第二部分主要是 z 变换相关内容。</p>
+<span id="more"></span>
+<h2 id="z-变换定义">z 变换定义</h2>
+<p>对一个离散信号 <span class="math inline">\(x(n), n \in (-\infty, \infty)\)</span>，z 变换的定义如下</p>
+<p><span class="math display">\[X(z) = \sum_{n=-\infty}^{\infty}x(n)z^{-n}\]</span></p>
+<p>其中 <span class="math inline">\(z\)</span> 为一复变量。因为 <span class="math inline">\(n \in (-\infty, \infty)\)</span>，上式也称之为双边 z 变换。那么如果 <span class="math inline">\(n \in [0, \infty)\)</span> ，就变成了单边 z 变换</p>
+<p><span class="math display">\[X(z) = \sum_{n=0}^{\infty}x(n)z^{-n}\]</span></p>
+<p>同样的，如果我们已知 <span class="math inline">\(X(z)\)</span> 及其收敛域 ROC 反求序列 <span class="math inline">\(x(n)\)</span> 则称之为逆 z 变换。</p>
+<h3 id="z-变换与拉普拉斯变换">z 变换与拉普拉斯变换</h3>
+<p>令 <span class="math inline">\(x_s(nT_s)\)</span> 是由连续信号 <span class="math inline">\(x(t)\)</span> 经抽样得到，即有</p>
+<p><span class="math display">\[x_s(nT_s) = x(t)\sum_{n=-\infty}^{\infty}\delta(t-nT_s)=\sum_nx(nT_s)\delta(t-nT_s)\]</span></p>
+<p>对上式取拉普拉斯变换，有</p>
+<p><span class="math display">\[\begin{split}X(s) &amp;= \int_{-\infty}^{\infty}x_s(nT_s)e^{-st}dt \\\
+&amp;=\int_{-\infty}^{\infty}[\sum_nx(nT_s)\delta(t-nT_s)]e^{-st}dt \\\
+&amp;=\sum_nx(nT_s)\int_{-\infty}^{\infty}\delta(t-nT_s)e^{-st}dt \\\
+&amp;=\sum_{n=-\infty}^{\infty}x(nT_s)e^{-snT_s} \\\
+&amp;=\int_{-\infty}^{\infty}x(nT_s)e^{-(snT_S)t}dt = X(e^{sT_s}) \end{split}\]</span></p>
+<p>记 <span class="math inline">\(z=e^{sT_s}\)</span>，将 <span class="math inline">\(T_s\)</span> 归一化为 1，我们就能得到 z 变换的定义</p>
+<p><span class="math display">\[X(z) = \sum_{n=-\infty}^{\infty}x(n)z^{-n}\]</span></p>
+<p>记拉普拉斯变量 <span class="math inline">\(s=\sigma + j\Omega\)</span>，且 <span class="math inline">\(\Omega=2 \pi f\)</span>。<span class="math inline">\(\Omega\)</span> 可以认为是相对连续系统及连续信号的角频率，单位 rad/s，则有</p>
+<p><span class="math display">\[z=e^{sT_s}=e^{(\sigma+j \Omega)T_s}=e^{\sigma T_s}e^{j \Omega T_s}\]</span></p>
+<p>再记 <span class="math inline">\(r=e^{\sigma T_s},\omega=\Omega T_s\)</span>，则有</p>
+<p><span class="math display">\[z=re^{j \omega}\]</span></p>
+<p><span class="math display">\[X(z)=\sum_{n=-\infty}^{\infty}[x(n)r^{-n}]e^{-j\omega n}\]</span></p>
+<p>注意到这个式子和傅立叶变换的相似之处。z 变换可以看成是信号乘以一加权序列 <span class="math inline">\(r^{-n}\)</span> 后的傅立叶变换 <span class="math inline">\(X(z) = F[x(n)r^{-n}]\)</span>。显然，当 <span class="math inline">\(r=1\)</span> 时 z 变换就变成了离散序列的傅立叶变换。</p>
+<h3 id="z-平面和-s-平面">z 平面和 s 平面</h3>
+<p>直接抄一张书上的图（Mac下数学绘图太麻烦了）</p>
+<img src="/2018/02/19/dsp-2/z_s_plane.jpg" class="">
+<p>不难得到二者之间的对应关系</p>
+<ul>
+<li>当 <span class="math inline">\(\sigma = 0\)</span> 时， <span class="math inline">\(r=1\)</span>。对应 <span class="math inline">\(s\)</span> 平面的 <span class="math inline">\(j \Omega\)</span> 轴。而 <span class="math inline">\(|z|=1\)</span> 对应 <span class="math inline">\(z\)</span> 平面半径 <span class="math inline">\(r=1\)</span> 的圆。即当 <span class="math inline">\(z\)</span> 仅在 <span class="math inline">\(j\Omega\)</span> 轴上取值时，z 变换就变成了傅立叶变换</li>
+<li>当 <span class="math inline">\(\sigma &lt; 0\)</span> 对应 <span class="math inline">\(s\)</span> 平面的左半平面，对应 <span class="math inline">\(r &lt; 1\)</span> 即单位圆内部</li>
+</ul>
+<p>我们设 <span class="math inline">\(T_s\)</span> 是抽样周期，<span class="math inline">\(f_s = 1/T_s\)</span> 为抽样频率，则有</p>
+<p><span class="math display">\[\omega=\Omega T_s = 2 \pi f/f_s\]</span></p>
+<p>因此，当 <span class="math inline">\(f\)</span> 在 <span class="math inline">\(j\Omega\)</span> 轴上从 <span class="math inline">\(-\infty\)</span> 到 <span class="math inline">\(\infty\)</span> 的过程中。每间隔 <span class="math inline">\(f_s\)</span>，对应 <span class="math inline">\(\omega\)</span> 从 0 到 <span class="math inline">\(2\pi\)</span>，即在单位圆上绕了一周。所以从 <span class="math inline">\(s\)</span> 平面到 <span class="math inline">\(z\)</span> 平面的映射不是单一的。</p>
+<p>由此引出一些重要的定义</p>
+<ul>
+<li>实际频率 <span class="math inline">\(f\)</span>，相对连续系统的频率</li>
+<li>角频率 <span class="math inline">\(\Omega=2\pi f\)</span>，相对连续系统的角频率</li>
+<li>归一化频率 <span class="math inline">\(f&#39;=f/f_s\)</span></li>
+<li>圆周频率 <span class="math inline">\(\omega=2 \pi f&#39;\)</span></li>
+</ul>
+<h2 id="z-变换的收敛域">z 变换的收敛域</h2>
+<p>给出定义，对于 z 变换 <span class="math inline">\(X(z)\)</span>，使其收敛的 <span class="math inline">\(z\)</span> 的取值集合称为 z 变换的收敛域 ROC。即有</p>
+<p><span class="math display">\[\sum_{n=-\infty}^{\infty}|x(n)r^{-n}|&lt;\infty\]</span></p>
+<p>其中 <span class="math inline">\(r = |z|\)</span>。因此可以想象收敛域时 <span class="math inline">\(z\)</span> 平面上一个圆的内部或者外部，即有 <span class="math inline">\(R_-&lt;|z|&lt;R_+\)</span>。下面有一些例子</p>
+<h3 id="例1">例1</h3>
+<p>令 <span class="math inline">\(a\)</span> 为常数，<span class="math inline">\(u(n)\)</span> 为单位阶跃函数。求以下式子 z 变换的收敛域</p>
+<p><span class="math display">\[x(n)=a^nu(n)\]</span></p>
+<p>根据定义我们有</p>
+<p><span class="math display">\[\begin{split} X(z)&amp;=\sum_{n=-\infty}^{\infty}a^nu(n)z^{-n}=\sum_{n=0}^{\infty} (az^{-1})^n \\\
+&amp;=\frac z{z-a}
+\end{split}\]</span></p>
+<p>显然当 <span class="math inline">\(|az^{-1}|&lt;1\)</span>，即 <span class="math inline">\(|z| &gt; |a|\)</span>时，<span class="math inline">\(X(z)\)</span> 收敛。因此收敛域为 <span class="math inline">\(a&lt;|z|&lt;\infty\)</span>，图像上为圆半径 <span class="math inline">\(r=|a|\)</span> 之外的部分</p>
+<h3 id="例2">例2</h3>
+<p>定义同上</p>
+<p><span class="math display">\[x(n)=-a^nu(-n-1)\]</span></p>
+<p>其中</p>
+<p><span class="math display">\[u(-n-1)=\begin{cases} 
+&amp;1 \ \ \  n \leq -1 \\\
+&amp;0 \ \ \  n \geq 0
+\end{cases}\]</span></p>
+<p>根据定义我们有</p>
+<p><span class="math display">\[\begin{split} X(z)&amp;=\sum_{n=-\infty}^{\infty}a^nu(-n-1)z^{-n}=-\sum_{n=-\infty}^0 (az^{-1})^n \\\
+&amp;=\frac z{z-a}
+\end{split}\]</span></p>
+<p>此时显然有 <span class="math inline">\(|z|&lt;|a|\)</span> 时收敛。因此收敛域为 <span class="math inline">\(|z|&lt;a\)</span>，图像上为圆半径 <span class="math inline">\(r=|a|\)</span> 之内的部分。注意到例 1 和例 2 的 z 变换结果是一样的，但 ROC 不同。因此为了保证由逆 z 变换求出的序列是唯一的，则必须指明 ROC。</p>
+<h3 id="例3">例3</h3>
+<p>定义同上</p>
+<p><span class="math display">\[x(n)=a^{|n|}=a^nu(n)+a^{-n}u(-n-1)\]</span></p>
+<p>对于级数 <span class="math inline">\(a^nu(n)\)</span>，其 z 变换为 <span class="math inline">\(\frac 1{1-az^{-1}}\)</span>，ROC 是 <span class="math inline">\(|z|&gt;a\)</span>。对于级数 <span class="math inline">\(a^{-n}u(-n-1)\)</span>，其 z 变换为 <span class="math inline">\(\frac 1{1-az}-1\)</span>，ROC 为 <span class="math inline">\(|z|&lt;\frac 1a\)</span>。因此</p>
+<p><span class="math display">\[X(z)=\frac 1{1-az^{-1}}+\frac 1{1-az}-1\]</span></p>
+<p>其 ROC 为 <span class="math inline">\(a&lt;|z|&lt;\frac 1a\)</span></p>
+<p>显然 <span class="math inline">\(a&gt;1\)</span> 时不收敛，当 <span class="math inline">\(a&lt;1\)</span> 时 <span class="math inline">\(X(z)\)</span> 才收敛。在图像上是一个内径为 <span class="math inline">\(r=a\)</span> 外径为 <span class="math inline">\(r=\frac 1a\)</span> 的环</p>
+<h3 id="序列与-roc-的关系">序列与 ROC 的关系</h3>
+<p>我们设序列 <span class="math inline">\(x(n)\)</span> 仅在 <span class="math inline">\(n\)</span> 取值 在 <span class="math inline">\(N_1\)</span> 与 <span class="math inline">\(N_2\)</span> 间有值，且<span class="math inline">\(N_1 &lt; N_2\)</span>。我们可以推演得到以下 ROC 性质。这里特别注意一下，对于有限长的因果序列，其收敛域为 $ |z|&gt;0 $</p>
+<h4 id="有限长序列">有限长序列</h4>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(N_1,N_2\)</span></th>
+<th style="text-align: center;">ROC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(0 \leq N_1 &lt; N_2 &lt; \infty\)</span></td>
+<td style="text-align: center;">$ z &gt;0 $</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">$ -&lt; N_1 &lt; N_2 $</td>
+<td style="text-align: center;">$ z &lt; $</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">$ -&lt; N_1  &lt; N_2 &lt; $</td>
+<td style="text-align: center;">$ 0 &lt; z &lt; $</td>
+</tr>
+</tbody>
+</table>
+<h4 id="右边序列">右边序列</h4>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(N_1,N_2\)</span></th>
+<th style="text-align: center;">ROC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(N_1&lt;0,N_2=\infty\)</span></td>
+<td style="text-align: center;">$R_{x1}&lt; z &lt; $</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(N_1 \geq 0,N_2=\infty\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\lvert z \rvert &gt;R_{x1}\)</span></td>
+</tr>
+</tbody>
+</table>
+<h4 id="左边序列">左边序列</h4>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(N_1,N_2\)</span></th>
+<th style="text-align: center;">ROC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(N_1=-\infty,N_2&gt;0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0&lt; \lvert z \rvert &lt;R_{x2}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(N_1=-\infty,N_2 \leq 0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\lvert z \rvert &lt;R_{x2}\)</span></td>
+</tr>
+</tbody>
+</table>
+<h4 id="双边序列">双边序列</h4>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(N_1,N_2\)</span></th>
+<th style="text-align: center;">ROC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(N_1=-\infty,N_2=\infty\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(R_{x1}&lt; \lvert z \rvert &lt; R_{x2}\)</span></td>
+</tr>
+</tbody>
+</table>
+<h2 id="z-变换的性质">z 变换的性质</h2>
+<h3 id="线性">线性</h3>
+<p>若</p>
+<p><span class="math display">\[\begin{split} Z[x_1(n)]=&amp;X_1(z),ROC:R_1 \\\
+Z[x_2(n)]=&amp;X_2(z),ROC:R_2 \end{split}\]</span></p>
+<p>则有</p>
+<p><span class="math display">\[Z[ax_1(n)+bx_2(n)]=aX_1(z)+bX_2(z), ROC:R_1 \bigcap R_2\]</span></p>
+<h3 id="时移性质">时移性质</h3>
+<p>对于双边 z 变换有</p>
+<p><span class="math display">\[\begin{split} Z[x(n-k)]&amp;=\sum_{n=-\infty}^{\infty}x(n-k)z^{-n} \\\
+&amp;=\sum_{m=-\infty}^{\infty}x(m)z^{-m}z^{-k}=z^{-k}X(z) \end{split}\]</span></p>
+<p>但对于单边 z 变换则稍微有点不同。如果 <span class="math inline">\(x(n)\)</span> 是因果序列</p>
+<p><span class="math display">\[Z[x(n-k)] = z^{-k}X^+(z)=z^{-k}X(z)\]</span> <span class="math display">\[\begin{split} Z[x(n+k)] =&amp; z^k[X^+(z)-\sum_{n=0}^{k-1}x(n)z^{-n}] \\\
+=&amp; z^k[X(z)-\sum_{n=0}^{k-1}x(n)z^{-n}] \end{split}\]</span></p>
+<h3 id="加权性质">加权性质</h3>
+<p>若</p>
+<p><span class="math display">\[Z[x(n)]=X(z),ROC:R_1 &lt; \lvert z \rvert &lt; R_2\]</span></p>
+<p>则</p>
+<p><span class="math display">\[Z[a^nx(n)]=Z(z/a),ROC: \lvert a \rvert R_1 &lt; |z| &lt; |a| R_2 \]</span></p>
+<p><span class="math display">\[Z[nx(n)]=-z \frac d{dz} X(z),ROC:R_1 &lt; |z| &lt; R_2\]</span></p>
+<h3 id="时域卷积性质">时域卷积性质</h3>
+<p>记 <span class="math inline">\(x(n),y(n)\)</span> 的 z 变换分别时 <span class="math inline">\(X(z),Y(z)\)</span>，则</p>
+<p><span class="math display">\[Z[x(n)*y(n)]=X(z)Y(z)\]</span></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/DSP/" rel="tag"># DSP</a>
+              <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/02/12/dsp-1/" rel="prev" title="信号处理笔记（一）">
+                  <i class="fa fa-chevron-left"></i> 信号处理笔记（一）
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/03/15/dsp-3/" rel="next" title="信号处理笔记（三）">
+                  信号处理笔记（三） <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"0adc9bcde8d3623024922e3e02f276a2"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

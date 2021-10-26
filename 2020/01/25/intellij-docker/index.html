@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="上一次讲了 C++ 的，这一次因为遇到了 JNI 的需求，所以又有类似的需求。一般而言 Java 跨平台性很好，正常不需要远程调试，不过摊上了 JNI 就不太行了，C++ 总是有一些平台特有的库。实际上 Jetbrains 全家桶都支持 Docker 化的调试编译，我没有仔细去研究，但看上去像只是把 docker 的基本功能包装了一下，功能比较弱，基本的用处在于部署而不是调试。所以这里我还是使用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 Intellij 调试 Docker 内的 Java 代码">
+<meta property="og:url" content="https://zjuturtle.com/2020/01/25/intellij-docker/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="上一次讲了 C++ 的，这一次因为遇到了 JNI 的需求，所以又有类似的需求。一般而言 Java 跨平台性很好，正常不需要远程调试，不过摊上了 JNI 就不太行了，C++ 总是有一些平台特有的库。实际上 Jetbrains 全家桶都支持 Docker 化的调试编译，我没有仔细去研究，但看上去像只是把 docker 的基本功能包装了一下，功能比较弱，基本的用处在于部署而不是调试。所以这里我还是使用">
+<meta property="og:locale">
+<meta property="article:published_time" content="2020-01-25T10:57:09.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.650Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="Intellij">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2020/01/25/intellij-docker/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2020/01/25/intellij-docker/","path":"2020/01/25/intellij-docker/","title":"使用 Intellij 调试 Docker 内的 Java 代码"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>使用 Intellij 调试 Docker 内的 Java 代码 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#docker-%E5%87%86%E5%A4%87"><span class="nav-number">1.</span> <span class="nav-text">Docker 准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#intellij-%E8%AE%BE%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">Intellij 设置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C%E8%84%9A%E6%9C%AC"><span class="nav-number">3.</span> <span class="nav-text">编译&#x2F;运行脚本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E8%AF%95"><span class="nav-number">4.</span> <span class="nav-text">调试</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2020/01/25/intellij-docker/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用 Intellij 调试 Docker 内的 Java 代码
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2020-01-25 18:57:09" itemprop="dateCreated datePublished" datetime="2020-01-25T18:57:09+08:00">2020-01-25</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/TechChatter/" itemprop="url" rel="index"><span itemprop="name">TechChatter</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>上一次讲了 C++ 的，这一次因为遇到了 JNI 的需求，所以又有类似的需求。一般而言 Java 跨平台性很好，正常不需要远程调试，不过摊上了 JNI 就不太行了，C++ 总是有一些平台特有的库。实际上 Jetbrains 全家桶都支持 Docker 化的调试编译，我没有仔细去研究，但看上去像只是把 docker 的基本功能包装了一下，功能比较弱，基本的用处在于部署而不是调试。所以这里我还是使用 remote debug 的方式实现，这个方法不仅适用于 Docker 也可以适用于远程服务器。</p>
+<span id="more"></span>
+<p>和 C++ 不同，java 自带远程调试功能。我个人写了一个小脚本负责编译运行，在 Intellij里面开 remote debug 等着。这样一运行脚本，java 程序就开始等待 attach remote debug。</p>
+<h2 id="docker-准备">Docker 准备</h2>
+<p>Dockerfile 其实没啥好说的，没有特别需要修改的地方，记得将工程映射到 container 内部。可以直接 mount，也可以直接在 docker-compose.yml 文件里修改。</p>
+<p>我倾向于使用 docker-compose.yml 文件。下面的 docker-compose.yml 文件将系统的当前目录映射至 container 内的 /app 目录下，方便源代码同步。在工程目录的根目录下运行 <code>docker-compose up -d</code> 就可以启动 docker 了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">services:</span><br><span class="line">  buildEnv:</span><br><span class="line">    image: java_environment_local:latest</span><br><span class="line">    container_name: java_env</span><br><span class="line">    volumes:</span><br><span class="line">      - .:/app</span><br></pre></td></tr></table></figure>
+<h2 id="intellij-设置">Intellij 设置</h2>
+<p>Intellij 打开工程后，需要增加一个运行选项。在运行的地方（右上角，锤子符号旁边）点下拉框，点击 Edit Configurations...，就可以进入到 Run/Debug Configuration。接着点击左上角的 + 号，增加一个 remote。</p>
+<p>接下来的设置需要注意了。Debugger mode 我们选择Listen to remote JVM，host 填写 localhost 就可以，port 则选择 5005。这里的意思是我们的 Intellij 会监听 5005 端口，等待 remote jvm 来远程通知。连接的方向是 remote jvm 去连接 Intellij 的 debugger，所以这里是不需要在 docker 中额外开辟端口，只要不冲突就可以（冲突的话 Intellij 会提示 Address already in use）</p>
+<p>然后下面的 Command line arguments for remote JVM 的内容需要拷贝出来</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-agentlib:jdwp=transport=dt_socket,server=n,address=30.5.49.165:5015,<span class="built_in">suspend</span>=y,onthrow=&lt;FQ exception class name&gt;,onuncaught=&lt;y/n&gt;</span><br></pre></td></tr></table></figure>
+<p>有两个地方需要注意，address 意思是 docker 内部的 java 程序启动的时候主动去连接的remote debugger 地址，这里需要填写本机的 IP而不是localhost。如果是 localhost 则会尝试去连接container 内部的 5005 端口；填写本机 IP, container 内部发起的程序才能主动连接到外部（即本机的 Intellij）。具体的可以参考我之前的博客<a href="https://zjuturtle.com/2017/11/22/docker-network/">Docker 网络详解</a></p>
+<p>另外 onthrow=<FQ exception class name>,onuncaught=<y/n> 需要去掉，似乎没用，我没有仔细去调研这个。</p>
+<h2 id="编译运行脚本">编译/运行脚本</h2>
+<p>在工程的根目录下可以写一个简单的脚本，用于自动编译和运行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line">javac [JAVA_FILE_LIST]</span><br><span class="line">java -agentlib:jdwp=transport=dt_socket,server=n,address=30.5.49.165:5005,<span class="built_in">suspend</span>=y -classpath [YOUR_JAVA_CLASS_PATH] [JAVA_PROGRAM_LIKE&#123;com.example.xxx&#125;]</span><br></pre></td></tr></table></figure>
+<p>脚本很简单，一行编译，一行运行。运行增加的参数就是上文中从 Intellij 里拷贝出来的。</p>
+<h2 id="调试">调试</h2>
+<p>在调试的时候，先打开 Intellij，打上断点后点击右上角的虫子符号，再在 docker 内部运行刚刚的脚本。Java 程序运行的时候会自动去连接 30.5.49.165:5005 的 remote debugger，这样就能进入 debug 模式了。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Docker/" rel="tag"># Docker</a>
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/Intellij/" rel="tag"># Intellij</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/01/02/happy-new-year/" rel="prev" title="27岁啦！">
+                  <i class="fa fa-chevron-left"></i> 27岁啦！
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/01/25/transformer/" rel="next" title="Transformer 模型笔记">
+                  Transformer 模型笔记 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"681bdff36a8470e474562dfee85a4b20"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

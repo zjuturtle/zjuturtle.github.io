@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="本文基本参考了Wiki 上的 Kademlia。同时参考了文献 Kademlia: A of Peer to peer information system Based on the XOR Metric （其本质上只能说是一种抄写）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kademlia 算法抄写">
+<meta property="og:url" content="https://zjuturtle.com/2017/11/01/Kademlia/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="本文基本参考了Wiki 上的 Kademlia。同时参考了文献 Kademlia: A of Peer to peer information system Based on the XOR Metric （其本质上只能说是一种抄写）">
+<meta property="og:locale">
+<meta property="og:image" content="https://zjuturtle.com/2017/11/01/Kademlia/kbucket.png">
+<meta property="og:image" content="https://zjuturtle.com/2017/11/01/Kademlia/bucket_split.jpg">
+<meta property="article:published_time" content="2017-11-01T12:48:46.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.629Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="network">
+<meta property="article:tag" content="distributed">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zjuturtle.com/2017/11/01/Kademlia/kbucket.png">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2017/11/01/Kademlia/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2017/11/01/Kademlia/","path":"2017/11/01/Kademlia/","title":"Kademlia 算法抄写"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Kademlia 算法抄写 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8A%82%E7%82%B9%E7%9A%84%E8%B7%9D%E7%A6%BB"><span class="nav-number">1.</span> <span class="nav-text">节点的距离</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%AF%E7%94%B1%E8%A1%A8"><span class="nav-number">2.</span> <span class="nav-text">路由表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E6%B6%88%E6%81%AF"><span class="nav-number">3.</span> <span class="nav-text">协议消息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%BD%8D%E8%8A%82%E7%82%B9"><span class="nav-number">4.</span> <span class="nav-text">定位节点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%BD%8D%E8%B5%84%E6%BA%90"><span class="nav-number">5.</span> <span class="nav-text">定位资源</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E5%85%A5%E7%BD%91%E7%BB%9C"><span class="nav-number">6.</span> <span class="nav-text">加入网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E5%8A%A0%E9%80%9F"><span class="nav-number">7.</span> <span class="nav-text">查询加速</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%84%9F%E6%83%B3"><span class="nav-number">8.</span> <span class="nav-text">感想</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2017/11/01/Kademlia/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Kademlia 算法抄写
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2017-11-01 20:48:46" itemprop="dateCreated datePublished" datetime="2017-11-01T20:48:46+08:00">2017-11-01</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>本文基本参考了<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/Kademlia">Wiki 上的 Kademlia</a>。同时参考了文献 <strong>Kademlia: A of Peer to peer information system Based on the XOR Metric</strong> （其本质上只能说是一种抄写）</p>
+<span id="more"></span>
+<p>最早先的 P2P 网络，比如 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Napster">Napster</a> 是通过一个中心化的 Hash Table 来进行查找。后来的 P2P 网络，比如 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Gnutella">Gnutella</a>，使用 Flooding 算法查找所有在线的节点。现在的 P2P 网络则大多是使用分布式的 Hash Table 来实现查找。分布式 Hash Table 存储了资源在网络上的位置。</p>
+<h2 id="节点的距离">节点的距离</h2>
+<p>节点的距离通过节点 ID 之间的异或操作（XOR）得到。显然节点间的距离有如下特性：</p>
+<ul>
+<li>两个节点间的距离是随机的</li>
+<li>节点与自身的距离是0</li>
+<li>对称性。A 到 B 的距离和 B 到 A 的距离相等</li>
+<li>三角不等。distance(A,B)+distance(B,C) &lt;= distance(A,C)</li>
+</ul>
+<p>还有一个重要的特性，距离不仅可以应用在节点之间，也可以应用在节点和键值之间。这在键值查找中很有用。</p>
+<h2 id="路由表">路由表</h2>
+<p>假设每个节点的 ID 是 N bits，那么每个节点需要维护 N 个列表（又称之为 K 桶）用于存储。列表里面的元素则存储了其他节点的信息（比如 IP 端口啥的）。每个列表存储的节点特性如下：</p>
+<blockquote>
+<p>每个列表对应于与节点相距特定范围距离的一些节点，节点的第 n 个列表中所找到的节点的第 n 位与该节点的第n位肯定不同，而前 n-1 位相同。</p>
+</blockquote>
+<p>举个栗子。如下图所示，节点使用 3 个 bits 的 ID。在下面的网络里面总共有 7 个节点。对于第 6 个节点（标号为 110 ）而言，根据 K 桶的定义，该节点应该有 3 个 K 桶。</p>
+<img src="/2017/11/01/Kademlia/kbucket.png" class="">
+<p>那么：</p>
+<ul>
+<li>第一个 K 桶，其可能的节点为<strong>左边</strong>灰色框内的三个（标号 000/001/010）。因为它们的第一位与 110 不同。</li>
+<li>第二个 K 桶，其可能的节点为<strong>中间</strong>灰色框内的两个（标号100/101）。因为它们的第二位与 110 不同，而第一位与 110 相同。</li>
+<li>第三个 K 桶，其可能的节点为<strong>右边</strong>灰色框内的一个（标号111）。因为它的第三位与 110 不同，而第一第二位与 110 相同。</li>
+</ul>
+<p>推而广之，第一个列表理论上可以填充一半的全部节点，而第二个列表可以填充1/4的全部节点，依次类推。当然列表里面的容量不可能是无限制的，可以取一个约定的值 K 作为每个列表的最大容量。列表在 Kademlia 网络里面又称为 K 桶。显然大部分的数据都会集中在前面几个列表中，而后面的列表很可能是空的（网络中的可用节点数据远小于 ID 的可能数目）。当某个列表满，且发现了新的符合要求的节点时：</p>
+<blockquote>
+<p>首先检查K桶中最早访问的节点，假如该节点仍然存活，那么新节点就被安排到一个附属列表中（作为一个替代缓存）.只有当K桶中的某个节点停止响应的时候，替代 cache 才被使用。换句话说，新发现的节点只有在老的节点消失后才被使用。</p>
+</blockquote>
+<h2 id="协议消息">协议消息</h2>
+<p>消息分为四种：</p>
+<ul>
+<li>PING 检查节点是否在线</li>
+<li>STORE 在某个节点中存储一个键值对</li>
+<li>FIND_NODE 返回对方节点桶中离请求键值最近的 K 个节点</li>
+<li>FIND_VALUE 与 FIND_NODE 一样，不过当请求的接收者存有请求者所请求的键的时候，它将返回相应键的值</li>
+</ul>
+<h2 id="定位节点">定位节点</h2>
+<p>节点的查询可以异步进行，也可以同步进行，不过同时查询的数量有限制（一般是3）。假设节点 A 要查询某个键值，则在查询时，先在自己的 K 桶中找到离所查询键值最近的 K 个节点。然后对这些个节点发起 FIND_NODE 操作，如果它们知道离被查键更近的节点，就返回它们（最多 K 个）。节点 A 始终维护一个 K 长度的节点列表，来存储当前知道的最近节点。如此不断地迭代操作，就能够搜索到离键值越来越近的节点。当某一次迭代的结果没有比前次节点更近，则迭代终止，此时的结果即是全网络中离查询键值最近的节点。</p>
+<p>这么说来，感觉之前有国人做的 Vagga 是不是就是滥用了同时查询限制，疯狂进行 FIND_NODE 导致怨声载道。。。</p>
+<h2 id="定位资源">定位资源</h2>
+<p>定位资源时，如果一个节点存有相应的资源的值的时候，它就返回该资源，搜索便结束了，除了该点以外，定位资源与定位离键最近的节点的过程相似。</p>
+<blockquote>
+<p>考虑到节点未必都在线的情况，资源的值被存在多个节点上（节点中的 K 个），并且，为了提供冗余，还有可能在更多的节点上储存值。储存值的节点将定期搜索网络中与储存值所对应的键接近的 K 个节点并且把值复制到这些节点上，这些节点可作为那些下线的节点的补充。另外，对于那些普遍流行的内容，可能有更多的请求需求，通过让那些访问值的节点把值存储在附件的一些节点上（不在 K 个最近节点的范围之类）来减少存储值的那些节点的负载，这种新的存储技术就是缓存技术。通过这种技术，依赖于请求的数量，资源的值被存储在离键越来越远的那些节点上，这使得那些流行的搜索可以更快地找到资源的储存者。由于返回值的节点的 NODE_ID 远离值所对应的关键字，网络中的“热点”区域存在的可能性也降低了。依据与键的距离，缓存的那些节点在一段时间以后将会删除所存储的缓存值。DHT 的某些实现（如 Kad ）即不提供冗余（复制）节点也不提供缓存，这主要是为了能够快速减少系统中的陈旧信息。在这种网络中，提供文件的那些节点将会周期性地更新网络上的信息（通过 NODE_LOOKUP 消息和 STORE 消息）。当存有某个文件的所有节点都下线了，关于该文件的相关的值（源和关键字）的更新也就停止了，该文件的相关信息也就从网络上完全消失了。</p>
+</blockquote>
+<h2 id="加入网络">加入网络</h2>
+<p>对于一个想要加入网络的新节点 A，需要知道一个已经在网络里面的某个节点 B，由这个节点来引导新加入的节点进行初始化。</p>
+<p>首先 A 节点需要生成一个随机且未被人使用的 ID 号，直到离开网络，该节点会一直使用该 ID 号。然后 A 节点需要将引导节点 B 加入自己的 K 桶中，然后向节点 B 发起 NODE_LOOK_UP 来定位自己（ NODE_LOOK_UP 在文献里指的是找到离某个节点最近的 K 个节点）。这样其他的节点就会将 A 节点加入自己的 K 桶中。同时也能够使用那些查询过程的中间节点（位于新加入节点和引导节点的查询路径上的其他节点）来填充新加入节点的K桶。</p>
+<p>最初，节点只有一个 K 桶（覆盖所有的 ID 范围）。当有新节点需要插入该 K 桶时，如果 K 桶已满，K 桶就开始分裂。其实我认为这里 Wiki 上的已满有歧义，这里的满应该不是指 K 桶内的元素达到了 K 个，而是要插入的节点已经不符合该 K 桶的覆盖范围，即覆盖范围包含了其自身 ID 的时候。实际的情况如下图所示。</p>
+<img src="/2017/11/01/Kademlia/bucket_split.jpg" class="">
+<p>实际上还有一种优化的骚操作，但我愣是没看懂。所以只能摘抄在下面</p>
+<blockquote>
+<p>对于节点内距离节点最近的那个K桶，Kademlia可以放松限制（即可以到达K时不发生分裂），因为桶内的所有节点离该节点距离最近，这些节点个数很可能超过K个，而且节点希望知道所有的这些最近的节点。因此，在路由树中，该节点附近很可能出现高度不平衡的二叉子树。假如K是20，新加入网络的节点ID为“xxx000011001”，则前缀为“xxx0011……”的节点可能有21个，甚至更多，新的节点可能包含多个含有21个以上节点的K桶。（位于节点附近的k桶）。这点保证使得该节点能够感知网络中附近区域的所有节点。</p>
+</blockquote>
+<p>在文献中的说明如下</p>
+<blockquote>
+<p>One complication arises in highly unbalanced trees.Suppose node u joins the system and is the only node whose ID begins 000.Suppose further that the system already has more than k nodes with prefix 001.Every node with prefix 001 would have an empty k-bucket into which u should be inserted, yet u’s bucket refresh would only notify k of the nodes.To avoid this problem, Kademlia nodes keep all valid contacts in a subtree of size at least k nodes, even if this requires splitting buckets in which the node’s own ID does not reside.Figure 5 illustrates these additional splits.When u refreshes the split buckets, all nodes with prefix 001 will learn about it.</p>
+</blockquote>
+<h2 id="查询加速">查询加速</h2>
+<p>因为 Kademlia 使用异或距离来进行路由查找。对于一个 n bits 定义的网络，在一个节点上执行查找操作的时间复杂度为 <span class="math inline">\(log(n)\)</span> 。这个可以使用位组（多个位联合）来优化。位组也可以称之为前缀。对一个 m 位的前缀来说，可对应 <span class="math inline">\(2^m-1\)</span> 个K桶。（m位的前缀本来可以对应 <span class="math inline">\(2^m\)</span> 个K桶）另外的那个 K 桶可以进一步扩展为包含该节点本身 ID 的路由树。这个特殊的 K 桶应该和之前没懂的优化骚操作有关。一个 b 位的前缀可以把查询的最大次数从 <span class="math inline">\(log(n)\)</span> 减少到$ log(n/b) $. 这只是查询次数的最大值，因为自己 K 桶可能比前缀有更多的位与目标键相同。</p>
+<h2 id="感想">感想</h2>
+<p>分布式真有意思，可惜自己的智商是个阻碍。。。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/network/" rel="tag"># network</a>
+              <a href="/tags/distributed/" rel="tag"># distributed</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/07/12/linux-login/" rel="prev" title="服务器登录管理">
+                  <i class="fa fa-chevron-left"></i> 服务器登录管理
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/11/02/go-1/" rel="next" title="Go 语言初探（一）">
+                  Go 语言初探（一） <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"5fc2b37a46881e4799e36173e03486da"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

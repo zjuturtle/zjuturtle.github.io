@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="又有一段时间没有写博客了。这一次我在 AWS 的 SageMaker 上去部署训练算法。SageMaker 的 train 和 host 都是在容器内实现的。我个人认为训练的任务放在容器里执行还是很科学的。在较低配置的机器上启动 Juypter Notebook 用于开发，然后在较高配置的集群上使用 Docker 训练算法，计算资源不闲置，用户也省钱。 本文参(chao)考(xi)了 Docker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker 中 RUN&#x2F;CMD&#x2F;ENTRYPOINT 详解">
+<meta property="og:url" content="https://zjuturtle.com/2018/06/20/docker-run-cmd-entrypoint/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="又有一段时间没有写博客了。这一次我在 AWS 的 SageMaker 上去部署训练算法。SageMaker 的 train 和 host 都是在容器内实现的。我个人认为训练的任务放在容器里执行还是很科学的。在较低配置的机器上启动 Juypter Notebook 用于开发，然后在较高配置的集群上使用 Docker 训练算法，计算资源不闲置，用户也省钱。 本文参(chao)考(xi)了 Docker">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-06-20T09:42:37.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.646Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Docker">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2018/06/20/docker-run-cmd-entrypoint/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2018/06/20/docker-run-cmd-entrypoint/","path":"2018/06/20/docker-run-cmd-entrypoint/","title":"Docker 中 RUN/CMD/ENTRYPOINT 详解"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Docker 中 RUN/CMD/ENTRYPOINT 详解 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#run-%E6%8C%87%E4%BB%A4"><span class="nav-number">1.</span> <span class="nav-text">RUN 指令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cmd-%E6%8C%87%E4%BB%A4"><span class="nav-number">2.</span> <span class="nav-text">CMD 指令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#entrypoint-%E6%8C%87%E4%BB%A4"><span class="nav-number">3.</span> <span class="nav-text">ENTRYPOINT 指令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2018/06/20/docker-run-cmd-entrypoint/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Docker 中 RUN/CMD/ENTRYPOINT 详解
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-06-20 17:42:37" itemprop="dateCreated datePublished" datetime="2018-06-20T17:42:37+08:00">2018-06-20</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/TechChatter/" itemprop="url" rel="index"><span itemprop="name">TechChatter</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>又有一段时间没有写博客了。这一次我在 AWS 的 SageMaker 上去部署训练算法。SageMaker 的 train 和 host 都是在容器内实现的。我个人认为训练的任务放在容器里执行还是很科学的。在较低配置的机器上启动 Juypter Notebook 用于开发，然后在较高配置的集群上使用 Docker 训练算法，计算资源不闲置，用户也省钱。</p>
+<p>本文参(chao)考(xi)了 <a target="_blank" rel="noopener" href="https://yeasy.gitbooks.io/docker_practice/content/">Docker — 从入门到实践</a></p>
+<span id="more"></span>
+<h2 id="run-指令">RUN 指令</h2>
+<p>这个指令用于构建镜像，其实是在 <code>Dockerfile</code> 里面执行命令行命令。有两种写法</p>
+<ul>
+<li>shell 格式 <code>RUN &lt;COMMAND&gt;</code>。例如</li>
+</ul>
+<figure class="highlight docker"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get update</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>exec 格式 <code>RUN ["executable", "param1", "param2"]</code>。例如</li>
+</ul>
+<figure class="highlight docker"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">RUN</span><span class="bash"> [<span class="string">&quot;apt-get&quot;</span>, <span class="string">&quot;update&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+<p>但要注意，我们最好将命令写在同一个 <code>RUN</code> 命令里面，否则会造成镜像臃肿（因为每运行一次 <code>RUN</code> 就会新建一层）。</p>
+<p>所以最好这么写</p>
+<figure class="highlight docker"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">RUN</span><span class="bash"> buildDeps=<span class="string">&#x27;gcc libc6-dev make&#x27;</span> \</span></span><br><span class="line"><span class="bash">    &amp;&amp; apt-get update \</span></span><br><span class="line"><span class="bash">    &amp;&amp; apt-get install -y <span class="variable">$buildDeps</span> \</span></span><br><span class="line"><span class="bash">    &amp;&amp; wget -O redis.tar.gz <span class="string">&quot;http://download.redis.io/releases/redis-3.2.5.tar.gz&quot;</span> \</span></span><br><span class="line"><span class="bash">    &amp;&amp; mkdir -p /usr/src/redis \</span></span><br><span class="line"><span class="bash">    &amp;&amp; tar -xzf redis.tar.gz -C /usr/src/redis --strip-components=1 \</span></span><br><span class="line"><span class="bash">    &amp;&amp; make -C /usr/src/redis \</span></span><br><span class="line"><span class="bash">    &amp;&amp; make -C /usr/src/redis install \</span></span><br><span class="line"><span class="bash">    &amp;&amp; rm -rf /var/lib/apt/lists/* \</span></span><br><span class="line"><span class="bash">    &amp;&amp; rm redis.tar.gz \</span></span><br><span class="line"><span class="bash">    &amp;&amp; rm -r /usr/src/redis \</span></span><br><span class="line"><span class="bash">    &amp;&amp; apt-get purge -y --auto-remove <span class="variable">$buildDeps</span></span></span><br></pre></td></tr></table></figure>
+<p><code>RUN</code> 指令在容器构建过程中起作用，和容器的运行无关。</p>
+<h2 id="cmd-指令">CMD 指令</h2>
+<p><code>CMD</code> 指令用于指定默认的容器主建成的启动命令。在一个镜像里面仅有一个 <code>CMD</code> 指令会起作用。比如下面这个 Dockerfile</p>
+<figure class="highlight docker"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> ubuntu:<span class="number">16.04</span></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> [<span class="string">&quot;echo&quot;</span>, <span class="string">&quot;first&quot;</span>]</span></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> [<span class="string">&quot;echo&quot;</span>, <span class="string">&quot;second&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+<p>第一个 <code>CMD</code> 指令会被忽略。如果运行这个 image，只会输出 <code>second</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ docker build -t <span class="built_in">test</span> .</span><br><span class="line">$ docker run <span class="built_in">test</span></span><br><span class="line"><span class="comment"># echo second</span></span><br><span class="line">second</span><br></pre></td></tr></table></figure>
+<h2 id="entrypoint-指令">ENTRYPOINT 指令</h2>
+<p>如果我们需要在容器运行时传一些参数，就需要 <code>ENTRYPOINT</code> 指令了。当存在 <code>ENTRYPOINT</code> 时，<code>CMD</code> 的含义就发生了改变，不再是直接的运行其命令，而是将 <code>CMD</code> 的内容作为参数传给 <code>ENTRYPOINT</code> 指令，换句话说实际执行时，将变为</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;ENTRYPOINT&gt; <span class="string">&quot;&lt;CMD&gt;&quot;</span></span><br></pre></td></tr></table></figure>
+<p>举个栗子，下面这个镜像可以得知当前的公网 IP。</p>
+<figure class="highlight docker"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> ubuntu:<span class="number">16.04</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get update \</span></span><br><span class="line"><span class="bash">    &amp;&amp; apt-get install -y curl \</span></span><br><span class="line"><span class="bash">    &amp;&amp; rm -rf /var/lib/apt/lists/*</span></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> [ <span class="string">&quot;curl&quot;</span>, <span class="string">&quot;-s&quot;</span>, <span class="string">&quot;http://ip.cn&quot;</span> ]</span></span><br></pre></td></tr></table></figure>
+<p>我们可以直接运行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ docker build -t myip .</span><br><span class="line">$ docker run myip</span><br><span class="line"><span class="comment">## 显示当前 IP ##</span></span><br></pre></td></tr></table></figure>
+<p>但如果我们希望显示 HTTP 头信息，就需要加上 <code>-i</code> 参数。但我们不可以直接加 <code>-i</code> 参数给 <code>docker run myip</code> 。因为 <code>docker run myip -i</code> 实际上会用 <code>-i</code> 来覆盖原有的默认 <code>CMD</code> 命令 <code>curl -s http://ip.cn</code>，而 <code>-i</code> 完全不是个命令。因此我们只能这么用</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker run myip curl -s http://ip.cn -i</span><br></pre></td></tr></table></figure>
+<p>很蠢，所以 <code>ENTRYPOINT</code> 指令就派上用场了。现在我们将 Dockerfile 改写如下</p>
+<figure class="highlight docker"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> ubuntu:<span class="number">16.04</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get update \</span></span><br><span class="line"><span class="bash">    &amp;&amp; apt-get install -y curl \</span></span><br><span class="line"><span class="bash">    &amp;&amp; rm -rf /var/lib/apt/lists/*</span></span><br><span class="line"><span class="keyword">ENTRYPOINT</span><span class="bash"> [ <span class="string">&quot;curl&quot;</span>, <span class="string">&quot;-s&quot;</span>, <span class="string">&quot;http://ip.cn&quot;</span> ]</span></span><br></pre></td></tr></table></figure>
+<p>这样，当我们运行 <code>docker run myip -i</code> 时， <code>CMD</code> 命令为 <code>-i</code>。再加上 <code>ENTRYPOINT</code>，本质上执行的命令就变成了 <code>curl -s http://ip.cn -i</code></p>
+<p>P.S. 上面栗子来自<a target="_blank" rel="noopener" href="https://yeasy.gitbooks.io/docker_practice/content/image/dockerfile/entrypoint.html">Docker — 从入门到实践</a></p>
+<h2 id="总结">总结</h2>
+<ul>
+<li>使用 RUN 指令安装应用和软件包，构建镜像。</li>
+<li>如果 Docker 镜像的用途是运行应用程序或服务，比如运行一个 MySQL，应该优先使用 Exec 格式的 ENTRYPOINT 指令。CMD 可为 ENTRYPOINT 提供额外的默认参数，同时可利用 docker run 命令行替换默认参数。</li>
+<li>如果想为容器设置默认的启动命令，可使用 CMD 指令。用户可在 docker run 命令行中替换此默认命令。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/Docker/" rel="tag"># Docker</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/05/10/xavier-init/" rel="prev" title="Xavier 初始化">
+                  <i class="fa fa-chevron-left"></i> Xavier 初始化
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/06/20/sagemaker/" rel="next" title="SageMaker 使用笔记">
+                  SageMaker 使用笔记 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"d28a6cbe9ee1071d1b34a5460634143e"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

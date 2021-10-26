@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="这一回我们讲讲如何在 N-gram 模型中使用维特比算法进行连续语音识别。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="N-gram 与 Viterbi 算法">
+<meta property="og:url" content="https://zjuturtle.com/2020/03/16/n-gram-viterbi/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="这一回我们讲讲如何在 N-gram 模型中使用维特比算法进行连续语音识别。">
+<meta property="og:locale">
+<meta property="og:image" content="https://zjuturtle.com/2020/03/16/n-gram-viterbi/example.jpg">
+<meta property="article:published_time" content="2020-03-15T17:54:26.000Z">
+<meta property="article:modified_time" content="2021-10-26T13:17:42.639Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="Algorithm">
+<meta property="article:tag" content="HMM">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="vierbi">
+<meta property="article:tag" content="N-gram">
+<meta property="article:tag" content="维特比算法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zjuturtle.com/2020/03/16/n-gram-viterbi/example.jpg">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2020/03/16/n-gram-viterbi/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2020/03/16/n-gram-viterbi/","path":"2020/03/16/n-gram-viterbi/","title":"N-gram 与 Viterbi 算法"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>N-gram 与 Viterbi 算法 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#n-gram-%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">N-gram 模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%90%9C%E7%B4%A2%E7%A9%BA%E9%97%B4"><span class="nav-number">2.</span> <span class="nav-text">搜索空间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hmm-%E6%A8%A1%E5%9E%8B%E6%89%A9%E5%B1%95"><span class="nav-number">3.</span> <span class="nav-text">HMM 模型扩展</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2020/03/16/n-gram-viterbi/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          N-gram 与 Viterbi 算法
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2020-03-16 01:54:26" itemprop="dateCreated datePublished" datetime="2020-03-16T01:54:26+08:00">2020-03-16</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 21:17:42" itemprop="dateModified" datetime="2021-10-26T21:17:42+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>这一回我们讲讲如何在 N-gram 模型中使用维特比算法进行连续语音识别。</p>
+<span id="more"></span>
+<h2 id="n-gram-模型">N-gram 模型</h2>
+<p>N-gram 本质上是一个统计模型，它的思想很简单。假设一个长度为 <span class="math inline">\(M\)</span> 的词序列为 <span class="math inline">\(w_1^M=\{w_1,...,w_M\}\)</span>，那么我们有</p>
+<p><span class="math display">\[P(W)=\prod_{m=1}^M P(w_m|w_1^{m-1})\]</span></p>
+<p>N-gram 就是把概率 <span class="math inline">\(P(w_m|w_1^{m-1})\)</span> 近似为 <span class="math inline">\(P(w_m|w_{m-n+1}^{m-1})\)</span>。就是说，下一个词的概率只和前 <span class="math inline">\(N\)</span> 个词有关。N-gram 模型也可以看做是 <span class="math inline">\(N-1\)</span> 阶的马尔科夫模型（注意这里是马尔可夫模型，而不是 HMM），它的每个状态只依赖于之前的 <span class="math inline">\(N-1\)</span> 个时刻，而与更久之前的历史无关。</p>
+<p>对于 N-gram 模型，它可以表达为 WFSA，需要有 <span class="math inline">\(|V|^{n-1}\)</span> 个状态以及 <span class="math inline">\(|V|^n\)</span> 个跳转，这里 <span class="math inline">\(|V|\)</span> 为词典的大小，每个状态表示 <span class="math inline">\(N-1\)</span> 个词的历史，而每一个跳转表示出现下一个词的概率。</p>
+<h2 id="搜索空间">搜索空间</h2>
+<p>假设句子 <span class="math inline">\(W\)</span> 由 <span class="math inline">\(M_W\)</span> 个词组成，<span class="math inline">\(W=w_1...w_{M_W}\)</span>。那么我们需要搜索最佳路径如下</p>
+<p><span class="math display">\[\begin{aligned} \hat{W}=&amp;\arg \max_{W \in \omega}\{\sum_{S \in S_W}p(O,S|W)P(W)\} \\
+=&amp;\arg \max_{W \in \omega} \{\sum_{S \in S_W} \prod_{m=1}^{M_W} p(o_{t_{m-1}+1}^{t_m},s_{t_{m-1}+1}^{t_m}|w_m)P(w_m|w_1^{m-1}) \}
+\end{aligned}\]</span></p>
+<p>解释一下，<span class="math inline">\(p(o_a^b,s_a^b|w)\)</span> 表示词 <span class="math inline">\(w\)</span> 沿着状态序列 <span class="math inline">\(s_a,...,s_b\)</span> 生成语音片段 <span class="math inline">\(o_a,...,o_b\)</span> 的概率。<span class="math inline">\(S_W\)</span> 为词序列 <span class="math inline">\(W\)</span> 可以对应的所有合法状态序列。<span class="math inline">\(t_m\)</span> 表示词 <span class="math inline">\(w_m\)</span> 对应的观察的最后一帧的下标，所以 <span class="math inline">\(t_{m-1}+1,...,t_m\)</span> 是 <span class="math inline">\(w_m\)</span> 对应的全部观察序列（<span class="math inline">\(t_m\)</span> 是 <span class="math inline">\(w_m\)</span> 对应的 HMM 终止状态）</p>
+<p>使用 Viterbi 概率来近似，可以把求和变成 max 。求和变求最大，我的理解是：一个词序列可以对应多种状态序列，实际上我们只需要取这个词序列最可能对音的状态序列就可以。因此公式改写如下</p>
+<p><span class="math display">\[\begin{aligned} \hat{W}=&amp; \arg \max_{W \in \omega}\{\sum_{S \in S_W}p(O,S|W)P(W)\} \\
+=&amp;\arg \max_{W \in \omega } \{\max_{S \in S_W}\prod_{m=1}^{M_W} p(o_{t_{m-1}+1}^{t_m},s_{t_{m-1}+1}^{t_m}|w_m)P(w_m|w_1^{m-1})\} \\
+=&amp;\arg \max\{\max_{T \in \tau_W} \prod_{m=1}^{M_W}  \tilde{p}(o_{t_{m-1}+1}^{t_m})P(w_m|w_1^{m-1}) \}
+\end{aligned}\]</span></p>
+<p>这个式子中 <span class="math inline">\(\tau_W\)</span> 代表词序列 <span class="math inline">\(W\)</span> 所有可能的结束帧序列（其实间接表示了一种对齐方式）。换句话说 <span class="math inline">\(T \in \tau_W\)</span> 是一个时间序列 <span class="math inline">\(t_1,...,t_{M_W}\)</span>，表示了词序列 <span class="math inline">\(w_1,...,w_{M_W}\)</span> 每一个词的最后一帧的时间。</p>
+<h2 id="hmm-模型扩展">HMM 模型扩展</h2>
+<p>Viterbi 算法可以高效的估计一个 HMM 模型在给定观测下的最优状态估计，即在上式中，可以高效计算一个词的最优状态序列。但这里我们需要对所有的词序列进行遍历（给定词序列，寻找最佳的时间序列对应方式，再求最大值）。这里我们对 Viterbi 算法进行扩展，即在词之间的增加状态跳转，同时这个跳转会讲语言模型的得分编码进去。</p>
+<p>这样一个扩展后的 HMM 大约会有 <span class="math inline">\(|\overline{S}|*|V|^{n-1}\)</span> 个状态。<span class="math inline">\(|\overline{S}|\)</span> 是每个词的平均状态数，而 <span class="math inline">\(|V|^{n-1}\)</span> 是 N-gram 模型的状态数。同时为了方便，我们还会有一个特殊的开始状态和结束状态。</p>
+<p>下图是一个简单的例子。每个方块代表一个词，词内的声学模型是 3 状态的 HMM（也可以是其他 HMM），每个状态都可以跳转到自身或者下一个状态。方块之间的跳转代表 N-gram 表示的语言模型。注意到这里还有一个特殊的跳转，直接从结束状态跳回至初始状态，方便进行连续的语音识别。</p>
+<img src="/2020/03/16/n-gram-viterbi/example.jpg" class="">
+<p>对上面的 HMM 应用维特比算法（输入的观测为声学概率，寻找最佳状态序列），便可以执行连续识别任务。</p>
+<h2 id="参考资料">参考资料</h2>
+<p><a target="_blank" rel="noopener" href="http://fancyerii.github.io/wfst/overview/">语音识别系统概述</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+              <a href="/tags/HMM/" rel="tag"># HMM</a>
+              <a href="/tags/ASR/" rel="tag"># ASR</a>
+              <a href="/tags/vierbi/" rel="tag"># vierbi</a>
+              <a href="/tags/N-gram/" rel="tag"># N-gram</a>
+              <a href="/tags/%E7%BB%B4%E7%89%B9%E6%AF%94%E7%AE%97%E6%B3%95/" rel="tag"># 维特比算法</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/03/07/dtw/" rel="prev" title="DTW 算法简介">
+                  <i class="fa fa-chevron-left"></i> DTW 算法简介
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2021/10/26/em-algorithm/" rel="next" title="EM 算法">
+                  EM 算法 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"dd16d4dd7dd77f6d42cacd2ea1fb08bf"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="公司有一部分的 C++ 库是我编写的，但一直没有系统的测试。只是在写出来的时候随便写了点测试代码，通过就算完事，当时的测试代码也没有留下来。最近做库的扩写，顺带就想把测试框架补上。我的 C++ 工程是用 CMake 来架构的，因此就记录一下如何用 CMake 使用 Google Test。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMake 与 Google Test">
+<meta property="og:url" content="https://zjuturtle.com/2017/11/29/cmake-gtest/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="公司有一部分的 C++ 库是我编写的，但一直没有系统的测试。只是在写出来的时候随便写了点测试代码，通过就算完事，当时的测试代码也没有留下来。最近做库的扩写，顺带就想把测试框架补上。我的 C++ 工程是用 CMake 来架构的，因此就记录一下如何用 CMake 使用 Google Test。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-11-29T06:18:18.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.634Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CMake">
+<meta property="article:tag" content="GTest">
+<meta property="article:tag" content="Google Test">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2017/11/29/cmake-gtest/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2017/11/29/cmake-gtest/","path":"2017/11/29/cmake-gtest/","title":"CMake 与 Google Test"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>CMake 与 Google Test | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#google-test-%E5%AE%89%E8%A3%85"><span class="nav-number">1.</span> <span class="nav-text">Google Test 安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#google-test-%E6%8E%A5%E5%85%A5"><span class="nav-number">2.</span> <span class="nav-text">Google Test 接入</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2017/11/29/cmake-gtest/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CMake 与 Google Test
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2017-11-29 14:18:18" itemprop="dateCreated datePublished" datetime="2017-11-29T14:18:18+08:00">2017-11-29</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/TechChatter/" itemprop="url" rel="index"><span itemprop="name">TechChatter</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>公司有一部分的 C++ 库是我编写的，但一直没有系统的测试。只是在写出来的时候随便写了点测试代码，通过就算完事，当时的测试代码也没有留下来。最近做库的扩写，顺带就想把测试框架补上。我的 C++ 工程是用 CMake 来架构的，因此就记录一下如何用 CMake 使用 Google Test。</p>
+<span id="more"></span>
+<h2 id="google-test-安装">Google Test 安装</h2>
+<p>去 GitHub 下载 <a target="_blank" rel="noopener" href="https://github.com/google/googletest">Google Test</a> 。当前的最新稳定版本是 1.8.0。直接下载下来的源码 包含了 Google Test 和 Google Mock 两个项目，实际上只需要 Google Test 文件夹内的内容就可以了。</p>
+<p>按照<a target="_blank" rel="noopener" href="https://github.com/google/googletest/blob/master/googletest/docs/Primer.md">官方文档</a>的指引，使用 Google Test 的最佳方式是先编译 Google Test 项目成一个静态库，然后写测试代码，链接过去。</p>
+<p>Google Test 直接使用 CMake 就可以 build 啦。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir build</span><br><span class="line"><span class="built_in">cd</span> build</span><br><span class="line">cmake -D $(GTEST_DIR)  <span class="comment"># Where you put googletest</span></span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+<p>在默认情况下，会生成 <code>gtest</code> 和 <code>gtest_main</code> 两个项目。两个都是静态库，但后一个包含 main 函数。</p>
+<p>注意在 Google Test 的 <code>CMakeLists.txt</code> 文件里还有 <code>install</code> 的命令</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">install</span>(TARGETS gtest gtest_main</span><br><span class="line">  DESTINATION lib)</span><br><span class="line"><span class="keyword">install</span>(DIRECTORY <span class="variable">$&#123;gtest_SOURCE_DIR&#125;</span>/<span class="keyword">include</span>/gtest</span><br><span class="line">  DESTINATION <span class="keyword">include</span>)</span><br></pre></td></tr></table></figure>
+<p>那么只要运行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make install</span><br></pre></td></tr></table></figure>
+<p>就可以直接将库安装在本地系统上了。</p>
+<h2 id="google-test-接入">Google Test 接入</h2>
+<p>假设我们的目录结构是这样的（假设库只有头文件）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">src</span><br><span class="line">|- foo.h</span><br><span class="line">tests</span><br><span class="line">|- CMakeLists.txt</span><br><span class="line">|- fooTest.cpp</span><br><span class="line">CMakeLists.txt</span><br></pre></td></tr></table></figure>
+<p>那么我们在最外层的 <code>CMakeLists.txt</code> 里可以这么写</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">project</span>(foo)</span><br><span class="line"><span class="keyword">add_subdirectory</span>(tests)</span><br></pre></td></tr></table></figure>
+<p>在 <code>tests/CMakeLists.txt</code> 里参照 <a target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/module/FindGTest.html">CMake指引</a> 则可以这么写</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">enable_testing</span>()</span><br><span class="line"></span><br><span class="line"><span class="keyword">find_package</span>(GTest REQUIRED)</span><br><span class="line"><span class="keyword">include_directories</span>(<span class="variable">$&#123;GTEST_INCLUDE_DIR&#125;</span>)</span><br><span class="line"><span class="keyword">include_directories</span>(../src/)</span><br><span class="line"><span class="keyword">add_executable</span>(Footest example.cpp)</span><br><span class="line"><span class="keyword">target_link_libraries</span>(Footest <span class="variable">$&#123;GTEST_BOTH_LIBRARIES&#125;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_test</span>(</span><br><span class="line">        NAME Footest</span><br><span class="line">        <span class="keyword">COMMAND</span> Footest</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>在之前的 Google Test 安装过程中，其实 <code>install</code> 里面没有安装 <code>FindGTest.cmake</code>。这个文件是 CMake 自己提供的。Mac 系统下在 <code>$&#123;CMAKE_ROOT&#125;/Modules</code> 下的。</p>
+<p>还有另外一种方式，即通过<a target="_blank" rel="noopener" href="https://github.com/google/googletest/blob/master/googletest/README.md#incorporating-into-an-existing-cmake-project">直接的源码接入</a>，Google 推荐，这里就不详细叙述了。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/C/" rel="tag"># C++</a>
+              <a href="/tags/CMake/" rel="tag"># CMake</a>
+              <a href="/tags/GTest/" rel="tag"># GTest</a>
+              <a href="/tags/Google-Test/" rel="tag"># Google Test</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/11/22/docker-network/" rel="prev" title="Docker 网络详解">
+                  <i class="fa fa-chevron-left"></i> Docker 网络详解
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/12/26/fft/" rel="next" title="任意长度的 FFT 算法-混合基算法及雷德算法">
+                  任意长度的 FFT 算法-混合基算法及雷德算法 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"e63df307e158c57f27f1fd2fe9381040"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

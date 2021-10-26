@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="上一篇我们讲了隐马尔可夫模型（HMM）的推导计算。对于一个单高斯隐马尔可夫模型而言，其参数集合包含 \(A&#x3D;[a_{ij}]\) 转移概率矩阵，高斯分布均值向量 \(\boldsymbol{\mu}_{i,m}\)，高斯分布的协方差 \(\boldsymbol{\Sigma}_{i,m}\)。 这一篇我们来讲讲如何从数据中训练得到这些参数。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="隐马尔可夫模型参数训练">
+<meta property="og:url" content="https://zjuturtle.com/2020/01/25/hmm-2/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="上一篇我们讲了隐马尔可夫模型（HMM）的推导计算。对于一个单高斯隐马尔可夫模型而言，其参数集合包含 \(A&#x3D;[a_{ij}]\) 转移概率矩阵，高斯分布均值向量 \(\boldsymbol{\mu}_{i,m}\)，高斯分布的协方差 \(\boldsymbol{\Sigma}_{i,m}\)。 这一篇我们来讲讲如何从数据中训练得到这些参数。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2020-01-25T12:28:20.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.649Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="Algorithm">
+<meta property="article:tag" content="HMM">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2020/01/25/hmm-2/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2020/01/25/hmm-2/","path":"2020/01/25/hmm-2/","title":"隐马尔可夫模型参数训练"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>隐马尔可夫模型参数训练 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#baum-whlch-%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">Baum-Whlch 算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#e-%E6%AD%A5%E9%AA%A4"><span class="nav-number">1.1.</span> <span class="nav-text">E 步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#m-%E6%AD%A5%E9%AA%A4"><span class="nav-number">1.2.</span> <span class="nav-text">M 步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%80%E5%A4%A7%E5%8C%96-q_2"><span class="nav-number">1.2.1.</span> <span class="nav-text">最大化 \(Q_2\)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%80%E5%A4%A7%E5%8C%96-q_1"><span class="nav-number">1.2.2.</span> <span class="nav-text">最大化 \(Q_1\)</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2020/01/25/hmm-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          隐马尔可夫模型参数训练
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2020-01-25 20:28:20" itemprop="dateCreated datePublished" datetime="2020-01-25T20:28:20+08:00">2020-01-25</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>上一篇我们讲了隐马尔可夫模型（HMM）的推导计算。对于一个单高斯隐马尔可夫模型而言，其参数集合包含 <span class="math inline">\(A=[a_{ij}]\)</span> 转移概率矩阵，高斯分布均值向量 <span class="math inline">\(\boldsymbol{\mu}_{i,m}\)</span>，高斯分布的协方差 <span class="math inline">\(\boldsymbol{\Sigma}_{i,m}\)</span>。 这一篇我们来讲讲如何从数据中训练得到这些参数。</p>
+<span id="more"></span>
+<p>我们假定我们的完整数据是 <span class="math inline">\(\boldsymbol{y}=\{\boldsymbol{o},\boldsymbol{h}\}\)</span>。<span class="math inline">\(\boldsymbol{o}\)</span> 是观测数据，<span class="math inline">\(\boldsymbol{h}\)</span> 是无法观测的隐马尔可夫状态。设我们需要训练的参数是 <span class="math inline">\(\theta\)</span>，那么我们就是需要最大化 <span class="math inline">\(\log p(\boldsymbol{y};\theta )\)</span>。显然因为隐藏量 <span class="math inline">\(\boldsymbol{h}\)</span> 的存在，我们不能直接去求取 <span class="math inline">\(\theta\)</span> 。但假如我们已经有了关于 <span class="math inline">\(\theta\)</span> 的一个比较好的估计，我们就可以计算在该估计值和观测数据条件下的 <span class="math inline">\(\log p(\boldsymbol{y};\theta)\)</span> 如下（ <span class="math inline">\(\theta_0\)</span> 是上一个估计）</p>
+<p><span class="math display">\[Q(\theta | \theta_0)=E_{\boldsymbol{h}|\boldsymbol{o}}[\log p(\boldsymbol{y};\theta)|\boldsymbol{o};\theta_0] = E[\log p(\boldsymbol{o};\boldsymbol{h})|\boldsymbol{o};\theta_0]\]</span></p>
+<p>我们的隐藏量 <span class="math inline">\(\boldsymbol{h}\)</span> 是离散的状态量，我们有</p>
+<p><span class="math display">\[Q(\theta|\theta_0)=\sum_{\boldsymbol{h}} P(\boldsymbol{h}|\boldsymbol{o};\theta_0) \log p(\boldsymbol{y};\theta)\]</span></p>
+<p>不断地迭代操作 E 步骤（计算期望）/ M 步骤（最大化期望），便可以找到 <span class="math inline">\(\theta\)</span> 的局部最优解。</p>
+<h2 id="baum-whlch-算法">Baum-Whlch 算法</h2>
+<p>Baum-Whlch 算法是用于解决 GMM-HMM 参数学习的算法。根据上面的叙述，我们先写出辅助函数（或者说条件期望值）。</p>
+<p>根据上一篇，我们有</p>
+<p><span class="math display">\[Q(\theta|\theta_0)=E[\log P(\boldsymbol{o}^T,\boldsymbol{q}^T|\theta)| \boldsymbol{o}^T,\theta_0]\]</span></p>
+<p><span class="math inline">\(\boldsymbol{q}^T\)</span> 是隐藏的状态量，无法观测。</p>
+<h3 id="e-步骤">E 步骤</h3>
+<p>先写出条件期望表达式</p>
+<p><span class="math display">\[Q(\theta|\theta_0)=\sum_{\boldsymbol{q}_1^T}P(\boldsymbol{q}_1^T|\boldsymbol{o}_1^T,\theta_0) \log P(\boldsymbol{o}_1^T,\boldsymbol{q}_1^T|\theta)\]</span></p>
+<p>状态 <span class="math inline">\(i\)</span> 下的观测服从单高斯分布 <span class="math inline">\(P_{\boldsymbol{o}_t}(i) \sim N(\boldsymbol{\mu}_{i,m},\boldsymbol{\Sigma}_{i,m})\)</span> 然后我们写出状态 <span class="math inline">\(i\)</span> 的对数高斯 PDF</p>
+<p><span class="math display">\[N_t(i)=\log P_{\boldsymbol{o}_t}(i) = -\frac D2\log (2 \pi) -\frac12 \log|\Sigma_i|-\frac12(\boldsymbol{o}_t-\boldsymbol{\mu}_i)^T \boldsymbol{\Sigma}^{-1}_i(\boldsymbol{o}_t-\boldsymbol{\mu}_i)\]</span></p>
+<p>在继续之前我们引入一个概念叫克罗内克函数 <span class="math inline">\(\delta_{ij}\)</span> 如下</p>
+<p><span class="math display">\[\delta_{ij}=\begin{cases} 0 \ i\ne j  \\ 1\ i=j \end{cases}\]</span></p>
+<p>由 <span class="math inline">\(P(\boldsymbol{q}_1^T)=\prod^{T-1}_{t=1}a_{q_tq_{t+1}}\)</span> 和 <span class="math inline">\(P(\boldsymbol{o}_1^T,\boldsymbol{q}_1^T)=P(\boldsymbol{o}_1^T|\boldsymbol{q}_1^T)P(\boldsymbol{q}_1^T)\)</span> 接下来我们有</p>
+<p><span class="math display">\[\log P(\boldsymbol{o_1^T},\boldsymbol{q_1^T}|\theta)=\sum^T_{t=1}N_t{q_t}+\sum^{T-1}_{t=1}\log a_{q_tq_{t+1}}\]</span></p>
+<p>所以我们可以重写 <span class="math inline">\(Q(\theta|\theta_0)\)</span> 如下</p>
+<p><span class="math display">\[\begin{aligned} Q(\theta | \theta_0) &amp;= \sum_{\boldsymbol{q}_1^T}P(\boldsymbol{o_1^T},\boldsymbol{q_1^T}|\theta_0)\sum_{t=1}^TN_t(q_t)+\sum_{\boldsymbol{q}_q^T}P(\boldsymbol{o_1^T},\boldsymbol{q_1^T}|\theta_0)\sum_{t=1}^{T-1}\log a_{q_tq_{t+1}}  \\
+&amp;=Q_1(\theta|\theta_0)+Q_2(\theta|\theta_0) \end{aligned}\]</span></p>
+<p>其中</p>
+<p><span class="math display">\[\begin{aligned} Q_1(\theta|\theta_0)&amp;=\sum^N_{i=1}\{ \sum_{\boldsymbol{q}_1^T}P(\boldsymbol{q}_1^T|\boldsymbol{o}_1^T,\theta_0)\sum_{t=1}^TN_t(q_t) \}\delta_{q_t,i} \\
+Q_2(\theta|\theta_0)&amp;=\sum^N_{i=1}\sum^N_{j=1}\{\sum_{\boldsymbol{q}_1^T}P(\boldsymbol{q_1^T}|\boldsymbol{o_1^T},\theta_0)\sum^{T-1}_{t=1}\log a_{q_tq_{t+1}} \}\delta_{q_t,i} \delta_{q_{t+1},j} \end{aligned}\]</span></p>
+<p>将 <span class="math inline">\(\sum_{\boldsymbol{q}_1^T}P(\boldsymbol{q}_1^T|\boldsymbol{o}_1^T,\theta_0)\delta_{q_t,i}=P(\boldsymbol{q}_1^T=i|\boldsymbol{q}_1^T,\theta_0)\)</span> 带入<span class="math inline">\(Q_1(\theta|\theta_0)\)</span>我们有</p>
+<p><span class="math display">\[Q_1(\theta|\theta_0)=\sum_{i=1}^N\sum_{t=1}^TP(\boldsymbol{q}_1^T=i|\boldsymbol{q}_1^T,\theta_0)N_t(i)\]</span></p>
+<p>类似的我们有</p>
+<p><span class="math display">\[Q_2(\theta|\theta_0)=\sum_{i=1}^N\sum_{j=1}^N\sum_{t=1}^{T-1}P(q_t=i,q_{t+1}=j|\boldsymbol{o}_1^T,\theta_0)\log a_{ij}\]</span></p>
+<p>在给定观测序列 <span class="math inline">\(\boldsymbol{q}_1^T\)</span> 和参数 <span class="math inline">\(\theta_0\)</span> 的情况下，在时间 <span class="math inline">\(t\)</span> 状态是 <span class="math inline">\(i\)</span>，在时间 <span class="math inline">\(t+1\)</span> 状态是 <span class="math inline">\(j\)</span> 的概率是</p>
+<p><span class="math display">\[\begin{aligned} \xi_t(i,j)&amp;=P(q_t=i,q_{t+1}=j|\boldsymbol{o}_1^T,\theta_0)=\frac{P(q_t=i,q_{t+1}=j,\boldsymbol{o}_1^T|\theta_0)}{P(\boldsymbol{o}_1^T|\theta_0)} \\ 
+&amp;=\frac{\alpha_t(i)\beta_{t+1}(j)a_{ij}\exp(N_{t+1}(j))}{P(\boldsymbol{o}_1^T|\theta_0)} \end{aligned}\]</span></p>
+<p>这里文字解释一下（我这里推导卡了好久，MMP）推导过程。第一个等号用的贝叶斯条件概率 <span class="math inline">\(P(A|B)=\frac{P(AB)}{P(B)}\)</span> 就可以。第二个等号主要是 <span class="math inline">\(P(q_t=i,q_{t+1}=j,\boldsymbol{o}_1^T|\theta_0)=\alpha_t(i)\beta_{t+1}(j)a_{ij}\exp(N_{t+1}(j))\)</span> 解释一下：<span class="math inline">\(\alpha_t(i)\)</span> 指的是时刻 <span class="math inline">\(t\)</span> 的状态为 <span class="math inline">\(i\)</span>， 时刻 1 到 <span class="math inline">\(t\)</span> 的观测概率，<span class="math inline">\(\beta_{t+1}(j)\)</span> 则是在时刻 <span class="math inline">\(t+1\)</span> 的状态为 <span class="math inline">\(j\)</span>，时刻 <span class="math inline">\(t+2\)</span> 到 <span class="math inline">\(T\)</span> 的观测概率，<span class="math inline">\(a_{ij}\exp(N_{t+1}(j))\)</span> 则是从状态 <span class="math inline">\(i\)</span> 变化到 <span class="math inline">\(j\)</span>，时刻 <span class="math inline">\(t+1\)</span> 的观测概率。不过要注意这里 <span class="math inline">\(\xi_T(i,j)\)</span> 没有定义。</p>
+<p>在给定观测序列 <span class="math inline">\(\boldsymbol{q}_1^T\)</span> 和参数 <span class="math inline">\(\theta_0\)</span> 的情况下，在时间 <span class="math inline">\(t\)</span> 状态是 <span class="math inline">\(i\)</span> 的概率是</p>
+<p><span class="math display">\[\gamma_t(i)=\sum_{j=1}^N\xi_t(i,j)\]</span></p>
+<p>而对于 <span class="math inline">\(t=T\)</span> 的情况，我们可以用它的特定定义得到</p>
+<p><span class="math display">\[\gamma_T(i)=P(q_T=i|\boldsymbol{o}_1^T,\theta_0)=\frac{P(q_T=i,\boldsymbol{o}_1^T|\theta_0)}{P(\boldsymbol{o}_1^T|\theta_0)}=\frac{\alpha_T(i)}{P(\boldsymbol{o}_1^T|\theta_0)}\]</span></p>
+<h3 id="m-步骤">M 步骤</h3>
+<h4 id="最大化-q_2">最大化 <span class="math inline">\(Q_2\)</span></h4>
+<p>我们要最大化 <span class="math inline">\(Q_2\)</span> ，同时需要满足条件 <span class="math inline">\(\sum^N_{j=1}a_{ij}=1\)</span>。可以应用拉格朗日乘子法使得重估公式变为</p>
+<p><span class="math display">\[\hat{a}_{ij}=\frac{\sum^{T-1}_{t=1}\xi_t(i,j)}{\sum^{T-1}_{t=1}\gamma_t(i)}\]</span></p>
+<p>什么鬼！让我们还是先来复习一下什么叫拉格朗日乘子法吧。设函数 <span class="math inline">\(f(x,y)\)</span> 在 <span class="math inline">\(A\)</span> 点处有极值 <span class="math inline">\(\kappa\)</span>，且在 <span class="math inline">\(A\)</span> 点的邻域内连续，则在 <span class="math inline">\(A\)</span> 点有 <span class="math inline">\(f(x,y)=\kappa\)</span>。另有常值函数 <span class="math inline">\(g(x,y)=c\)</span>，则两个函数在 <span class="math inline">\(A\)</span> 点的全微分如下</p>
+<p><span class="math display">\[\mathrm{d}f=\frac{\partial f}{\partial x}\mathrm{d}x+\frac{\partial f}{\partial y}\mathrm{d}y\]</span></p>
+<p><span class="math display">\[\mathrm{d}g=\frac{\partial g}{\partial x}\mathrm{d}x+\frac{\partial g}{\partial y}\mathrm{d}y\]</span></p>
+<p>由于 <span class="math inline">\(\mathrm{d}x\)</span> 和 <span class="math inline">\(\mathrm{d}y\)</span> 是任意无穷小量，故该线性方程组的系数成比例</p>
+<p><span class="math display">\[\frac{\frac{\partial f}{\partial x}}{\frac{\partial g}{\partial x}}=\frac{\frac{\partial f}{\partial y}}{\frac{\partial g}{\partial y}}=-\lambda\]</span></p>
+<p>即</p>
+<p><span class="math display">\[\frac{\partial f}{\partial x}+\lambda\frac{\partial g}{\partial x}=0\]</span></p>
+<p><span class="math display">\[\frac{\partial f}{\partial y}+\lambda\frac{\partial g}{\partial y}=0\]</span></p>
+<p>将上二式分别乘以 <span class="math inline">\(\mathrm{d}x\)</span> 和 <span class="math inline">\(\mathrm{d}y\)</span>，再相加积分，得到拉格朗日函数如下，求原函数极值的问题就转化为求该函数极值的问题。</p>
+<p><span class="math display">\[L(x,y,\lambda)=f(x,y)+\lambda (g(x,y)-c) \]</span></p>
+<p>回到刚刚的求 <span class="math inline">\(Q_2\)</span> 极值的问题，我们应用拉格朗日乘子法如下</p>
+<p><span class="math display">\[\sum_{i=1}^N\sum_{j=1}^N\sum_{t=1}^{T-1}\xi_t(i,j)\log a_{ij}+\lambda(\sum_j a_{ij}-1)\]</span></p>
+<p>对 <span class="math inline">\(a_{ij}\)</span> 求偏导，然后令其为 0</p>
+<p><span class="math display">\[\begin{aligned} \frac{\sum_{t=1}^{T-1}\xi_t(i,j)}{a_{ij}} + \lambda &amp;= 0 \\
+\sum_{t=1}^{T-1}\xi_t(i,j)+{a_{ij}}  \lambda &amp;= 0 \\
+\sum_{j=1}^N( \sum_{t=1}^{T-1}\xi_t(i,j)+{a_{ij}}  \lambda) &amp;= 0 \\
+\sum_{t=1}^{T-1} \gamma_t(i) + \lambda &amp;= 0
+\end{aligned}\]</span></p>
+<p>再代入原来的式子，就有</p>
+<p><span class="math display">\[\hat{a}_{ij} = \frac{\sum_{t=1}^{T-1} \xi_t(i,j)}{\sum_{t=1}^{T-1}\gamma_t(i)}\]</span></p>
+<h4 id="最大化-q_1">最大化 <span class="math inline">\(Q_1\)</span></h4>
+<p>去掉 <span class="math inline">\(Q_1\)</span> 中与优化无关的式子，得到下面的目标函数</p>
+<p><span class="math display">\[Q_1(\boldsymbol{\mu}_i,\boldsymbol{\Sigma}_i)=\sum_{i=1}^N\sum_{t=1}^T\gamma_t(i)(\boldsymbol{o}_t-\boldsymbol{\mu}_i)^T \boldsymbol{\Sigma_t^{-1}}(\boldsymbol{o}_t-\boldsymbol{\mu}_i)-\frac12\log |\boldsymbol{\Sigma}_i|\]</span></p>
+<p>同样根据 <span class="math inline">\(\frac{\partial Q_1}{\partial \boldsymbol{\Sigma}_i}=0\)</span> 来得到重估计公式如下(懒得去推导了。。。抄书抄书)</p>
+<p><span class="math display">\[\hat{\boldsymbol{\Sigma}}_i=\frac{\sum_{t=1}^T \gamma_t(i)(\boldsymbol{o}_t-\hat{\boldsymbol{\mu}}_i)(\boldsymbol{o}_t-\hat{\boldsymbol{\mu}}_i)^T}{\sum_{t=1}^T \gamma_t(i)}\]</span></p>
+<p><span class="math display">\[\hat{\boldsymbol{\mu}}_i=\frac{\sum_{t=1}^T\gamma_t(i)\boldsymbol{o}_t}{\sum_{t=1}^T \gamma_t(i)}\]</span></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+              <a href="/tags/HMM/" rel="tag"># HMM</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/01/25/hmm-1/" rel="prev" title="隐马尔可夫模型">
+                  <i class="fa fa-chevron-left"></i> 隐马尔可夫模型
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/03/06/fbank-mfcc/" rel="next" title="FBank与MFCC 计算">
+                  FBank与MFCC 计算 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"1956c800d49305787dd1c46595a8aa2e"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

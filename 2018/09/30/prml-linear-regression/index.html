@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="这次记录一下线性回归相关的内容。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PRML笔记 - 线性回归">
+<meta property="og:url" content="https://zjuturtle.com/2018/09/30/prml-linear-regression/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="这次记录一下线性回归相关的内容。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-09-30T03:38:31.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.649Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="PRML">
+<meta property="article:tag" content="贝叶斯">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2018/09/30/prml-linear-regression/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2018/09/30/prml-linear-regression/","path":"2018/09/30/prml-linear-regression/","title":"PRML笔记 - 线性回归"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>PRML笔记 - 线性回归 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">基本模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%81%E5%A4%A7%E4%BC%BC%E7%84%B6%E6%B3%95%E5%92%8C%E6%9C%80%E5%B0%8F%E5%B9%B3%E6%96%B9"><span class="nav-number">2.</span> <span class="nav-text">极大似然法和最小平方</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E6%96%AF%E5%8F%98%E9%87%8F%E7%9A%84%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%AE%9A%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">高斯变量的贝叶斯定理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E5%88%86%E5%B8%83"><span class="nav-number">4.</span> <span class="nav-text">参数分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E6%B5%8B%E5%88%86%E5%B8%83"><span class="nav-number">5.</span> <span class="nav-text">预测分布</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2018/09/30/prml-linear-regression/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PRML笔记 - 线性回归
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-09-30 11:38:31" itemprop="dateCreated datePublished" datetime="2018-09-30T11:38:31+08:00">2018-09-30</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>这次记录一下线性回归相关的内容。</p>
+<span id="more"></span>
+<h2 id="基本模型">基本模型</h2>
+<p>最简单的线性回归模型为</p>
+<p><span class="math display">\[y(\boldsymbol{x},\boldsymbol{w})=w_0 +w_1x_1+...+w_Dx_D\]</span></p>
+<p>一般来说，我们会套一个基函数 <span class="math inline">\(\phi_j(x)\)</span>，这样能拟合的函数就多了</p>
+<p><span class="math display">\[y(\boldsymbol{x},\boldsymbol{w})=w_0 + \sum_{j=1}^{M-1}w_j\phi_j(\boldsymbol{x})\]</span></p>
+<p>这样这个回归模型就会有 <span class="math inline">\(M\)</span> 个参数，为了方便起见，我们会定义个 <span class="math inline">\(\phi_0(\boldsymbol{x})=0\)</span>，然后就会变成</p>
+<p><span class="math display">\[y(\boldsymbol{x},\boldsymbol{w})=\boldsymbol{w}^T \boldsymbol{\phi}(\mathbf{x})\]</span></p>
+<p>这里 <span class="math inline">\(\boldsymbol{w}=(w_0,...,w_{M-1})^T\)</span>，<span class="math inline">\(\boldsymbol{\phi}=(\phi_0,...,\phi_{M-1})^T\)</span></p>
+<p>对于 <span class="math inline">\(\boldsymbol{\phi}\)</span>，有很多种选择，比如可以选 <span class="math inline">\(\phi_j(x)=x^j\)</span>，这样就变成了多项式拟合。又比如可以使用 <span class="math inline">\(\phi_j(x)=\exp\{-\frac{(x-\mu_j)^2}{2s^2}\}\)</span>，就是高斯基函数。</p>
+<h2 id="极大似然法和最小平方">极大似然法和最小平方</h2>
+<p>假设目标变量 <span class="math inline">\(t\)</span> 由确定的函数 <span class="math inline">\(y(\boldsymbol{x},\boldsymbol{w})\)</span> 加噪声给出，则</p>
+<p><span class="math display">\[t=y(\boldsymbol{x},\boldsymbol{w})+\varepsilon\]</span></p>
+<p>那么我们有</p>
+<p><span class="math display">\[p(t|\boldsymbol{x},\boldsymbol{w},\beta)=\mathscr{N}(t|y(\boldsymbol{x},\boldsymbol{w}), {\beta}^{-1})\]</span></p>
+<p>对于观测数据 <span class="math inline">\(\boldsymbol{X}={x_1,...,x_N}\)</span>，其对应的目标值为 <span class="math inline">\(\boldsymbol{t}={t_1,...,t_N}\)</span>，那么可以写出似然函数</p>
+<p><span class="math display">\[p(\boldsymbol{t}|\boldsymbol{X},\boldsymbol{w},\beta)= \prod_{n=1}^{N} \mathscr{N}(t_n|w^T\boldsymbol{\phi}(x_n),{\beta}^{-1})\]</span></p>
+<p>两边取对数（下面省略了 <span class="math inline">\(x\)</span>）</p>
+<p><span class="math display">\[\begin{split}\ln p(\boldsymbol{t}|\boldsymbol{w},\beta) &amp;= \sum_{n=1}^{N} \ln \mathscr{N}(t_n|w^T \boldsymbol{\phi}(x_n),{\beta}^{-1}) \\
+&amp;= \frac N 2 \ln \beta- \frac N 2 \ln(2 \pi) -\beta E_D(\boldsymbol{w}) \\
+E_D(\boldsymbol{w}) &amp;= \frac 1 2 \sum^N_{n=1}\{t_n - \boldsymbol{w}^T \boldsymbol{\phi}(x_n)\}^2\end{split}\]</span></p>
+<p>接下来就是对似然函数算梯度</p>
+<p><span class="math display">\[ \nabla \ln p(\boldsymbol{t}|\boldsymbol{w},\beta) = \beta \sum_{n=1}^{N}\{t_n-\boldsymbol{w}^T \boldsymbol{\phi}(x_n) \} \boldsymbol{\phi}(x_n)^T \]</span></p>
+<p>老规矩，将梯度设为 0，得到如下</p>
+<p><span class="math display">\[0= \sum^N_{n=1}t_n \boldsymbol{\phi}(x_n)^T-\boldsymbol{w}^T\left(  \sum_{n=1}^N \boldsymbol{\phi}(x_n)\boldsymbol{\phi}(x_n)^T \right)\]</span></p>
+<p>这样通过极大似然就有</p>
+<p><span class="math display">\[\boldsymbol{w}_{ML}=(\boldsymbol{\Phi}^T\boldsymbol{\Phi})^{-1}\boldsymbol{\Phi}^T\]</span></p>
+<p>其中的 <span class="math inline">\(\boldsymbol{\Phi}\)</span> 就是设计矩阵，定义如下</p>
+<p><span class="math display">\[\boldsymbol{\Phi}= \begin {pmatrix} 
+\phi_0(x_1) &amp; \phi_1(x_1) &amp; ... &amp; \phi_{M-1}(x_1) \\
+\phi_0(x_2) &amp; \phi_1(x_2) &amp; ... &amp; \phi_{M-1}(x_2) \\
+... &amp; ...&amp; \ddots &amp;... \\
+\phi_0(x_N) &amp; \phi_1(x_N) &amp; ... &amp; \phi_{M-1}(x_N)
+ \end{pmatrix}\]</span></p>
+<p>这里还引申出一个重要的量叫伪逆，某种意义上它可以看作是方阵的逆在非方阵上的推广。</p>
+<p><span class="math display">\[ \boldsymbol{\Phi}^{\dagger}=(\boldsymbol{\Phi}^T\boldsymbol{\Phi})^{-1}\boldsymbol{\Phi}^T \]</span></p>
+<h2 id="高斯变量的贝叶斯定理">高斯变量的贝叶斯定理</h2>
+<p>这里略去证明直接给出定义。假定我们有高斯分布的边缘分布和条件分布如下</p>
+<p><span class="math display">\[\begin{split}p(x)&amp;=\mathscr{N}(x|\mu, \Lambda ^{-1})\\
+p(y|x)&amp;=\mathscr{N}(y|Ax+b,L^{-1})\end{split}\]</span></p>
+<p>那么我们就有</p>
+<p><span class="math display">\[\begin{split}p(y) &amp;= \mathscr{N}(y|A\mu+b,L^{-1}+A\Lambda^{-1}A^T)\\
+p(x|y) &amp;= \mathscr{N}(x|\Sigma\{A^TL(y-b)+\Lambda \mu\},\Sigma)\end{split}\]</span></p>
+<p>其中</p>
+<p><span class="math display">\[\Sigma = (\Lambda+A^TLA)^{-1}\]</span></p>
+<h2 id="参数分布">参数分布</h2>
+<p>接下来阐述参数分布。假设我们的先验分布如下</p>
+<p><span class="math display">\[p(\boldsymbol{w})=\mathscr{N}(\boldsymbol{w}|,\boldsymbol{m}_0,\boldsymbol{S}_0)\]</span></p>
+<p>我们的后验分布则为</p>
+<p><span class="math display">\[p(\boldsymbol{w}|\boldsymbol{t})=\mathscr{N}(\boldsymbol{w}|\boldsymbol{m}_N,\boldsymbol{S}_N)\]</span></p>
+<p>其中</p>
+<p><span class="math display">\[\boldsymbol{m}_N=\boldsymbol{S}_N({\boldsymbol{S}_0}^{-1}\boldsymbol{m}_0+\beta \boldsymbol{\Phi}^T\boldsymbol{t})\]</span></p>
+<p><span class="math display">\[\boldsymbol{S}_N^{-1}=\boldsymbol{S}_0^{-1}+\beta\boldsymbol{\Phi}^T\boldsymbol{\Phi}\]</span></p>
+<h2 id="预测分布">预测分布</h2>
+<p>实际应用中，通常我们对新的 <span class="math inline">\(x\)</span> 值预测出的 <span class="math inline">\(t\)</span> 值感兴趣。这就需要计算预测分布(这里简略了输入量 <span class="math inline">\(\boldsymbol{x}\)</span>)</p>
+<p><span class="math display">\[p(t|\boldsymbol{t},\alpha,\beta)=\int p(\boldsymbol{w},\beta)p(\boldsymbol{w},\alpha, \beta)\]</span></p>
+<p>，在线性模型下，其预测分布也是高斯的</p>
+<p><span class="math display">\[p(t|\boldsymbol{x},\boldsymbol{t},\alpha,\beta) = \mathscr{N}(t|\boldsymbol{m}_N^T \boldsymbol{\phi}(\boldsymbol{x}), \sigma^2_N(\boldsymbol{x}))\]</span></p>
+<p>其中</p>
+<p><span class="math display">\[\sigma^2_N(\boldsymbol{x})=\frac 1 {\beta}+\phi(\boldsymbol{x})^T\boldsymbol{S}_N\boldsymbol{\phi}(x)\]</span></p>
+<p>其中第一项表示了数据中的噪声，而第二项则反映了参数 <span class="math inline">\(\boldsymbol{w}\)</span> 关联的不确定性。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/PRML/" rel="tag"># PRML</a>
+              <a href="/tags/%E8%B4%9D%E5%8F%B6%E6%96%AF/" rel="tag"># 贝叶斯</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/08/30/prml-regression-loss/" rel="prev" title="PRML笔记 - 回归损失函数">
+                  <i class="fa fa-chevron-left"></i> PRML笔记 - 回归损失函数
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/04/06/prml-laplace-approximation/" rel="next" title="PRML笔记 - Laplace Approximation">
+                  PRML笔记 - Laplace Approximation <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"9aa5f526de5298d58b938d2a539a1735"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

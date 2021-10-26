@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="早先的时候 AWS 给了一万美刀的抵价券，所以自然而然地机器学习就放在 AWS 上了。SageMaker 其实是去年出的，我个人的感觉是不太成熟，比如默认的情况下只支持 Python2.7 (截止2018.6.7)。但某种意义上比自己手动搭显卡配环境会好一点（主要是有优惠券2333）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SageMaker 使用笔记">
+<meta property="og:url" content="https://zjuturtle.com/2018/06/20/sagemaker/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="早先的时候 AWS 给了一万美刀的抵价券，所以自然而然地机器学习就放在 AWS 上了。SageMaker 其实是去年出的，我个人的感觉是不太成熟，比如默认的情况下只支持 Python2.7 (截止2018.6.7)。但某种意义上比自己手动搭显卡配环境会好一点（主要是有优惠券2333）。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-06-20T12:00:12.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.646Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="Machine Learning">
+<meta property="article:tag" content="SageMaker">
+<meta property="article:tag" content="Jupyter Notebook">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2018/06/20/sagemaker/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2018/06/20/sagemaker/","path":"2018/06/20/sagemaker/","title":"SageMaker 使用笔记"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>SageMaker 使用笔记 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#sagemaker-%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">SageMaker 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%90%AD%E5%BB%BA%E8%AE%AD%E7%BB%83%E7%8E%AF%E5%A2%83"><span class="nav-number">2.</span> <span class="nav-text">搭建训练环境</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-juypter-notebook-%E8%BF%9B%E8%A1%8C%E6%95%B0%E6%8D%AE%E6%B8%85%E6%B4%97"><span class="nav-number">2.1.</span> <span class="nav-text">使用 Juypter Notebook 进行数据清洗</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8A%E4%BC%A0%E6%95%B0%E6%8D%AE%E5%88%B0-s3"><span class="nav-number">2.2.</span> <span class="nav-text">上传数据到 S3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E8%AE%AD%E7%BB%83-docker-image"><span class="nav-number">2.3.</span> <span class="nav-text">构建训练 Docker image</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#test_dir"><span class="nav-number">2.3.1.</span> <span class="nav-text">test_dir</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#build_and_push.sh"><span class="nav-number">2.3.2.</span> <span class="nav-text">build_and_push.sh</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dockerfile"><span class="nav-number">2.3.3.</span> <span class="nav-text">Dockerfile</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#train.py"><span class="nav-number">2.3.4.</span> <span class="nav-text">train.py</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#train"><span class="nav-number">2.3.5.</span> <span class="nav-text">train</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#train_local.sh"><span class="nav-number">2.3.6.</span> <span class="nav-text">train_local.sh</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8F%90%E4%BA%A4%E8%AE%AD%E7%BB%83%E4%BB%BB%E5%8A%A1"><span class="nav-number">3.</span> <span class="nav-text">提交训练任务</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2018/06/20/sagemaker/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SageMaker 使用笔记
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-06-20 20:00:12" itemprop="dateCreated datePublished" datetime="2018-06-20T20:00:12+08:00">2018-06-20</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>早先的时候 AWS 给了一万美刀的抵价券，所以自然而然地机器学习就放在 AWS 上了。SageMaker 其实是去年出的，我个人的感觉是不太成熟，比如默认的情况下只支持 Python2.7 (截止2018.6.7)。但某种意义上比自己手动搭显卡配环境会好一点（主要是有优惠券2333）。</p>
+<span id="more"></span>
+<h2 id="sagemaker-简介">SageMaker 简介</h2>
+<p>SageMaker 使用了 S3 + Jupyter Notebook + Docker 这样一个技术组合。SageMaker 大致工作流程如下：</p>
+<ol type="1">
+<li>上传训练数据到 S3</li>
+<li>在 AWS 提供的 Jupyter Notebook 上清洗数据，搭建/开发模型，也可以做一些小规模的测试</li>
+<li>通过 AWS 提供的接口或手动构建 Docker 训练镜像，提交给 AWS 的训练集群训练</li>
+<li>可以将训练后的模型直接部署在 AWS 上，用于生产环境</li>
+</ol>
+<p>它的计算资源分为三类，且所有的计算资源都是按小时收费，可以<a target="_blank" rel="noopener" href="https://amazonaws-china.com/cn/sagemaker/pricing/">参考这里</a></p>
+<ul>
+<li>模型搭建 -- 用于运行 Jupyter Notebook</li>
+<li>模型训练 -- 用于训练模型</li>
+<li>模型托管 -- 用于模型部署</li>
+</ul>
+<p>实际上 SageMaker 提供了 3 种训练方式。</p>
+<ol type="1">
+<li>使用 SageMaker 预置的算法，只需要提供数据就可以了。</li>
+<li>调用 SageMaker 的 API 进行训练自定义的模型，需要提供一个实现特定 API 的 python 文件。</li>
+<li>用户自己提供包含自定义模型的训练镜像。</li>
+</ol>
+<p>蛋碎的一点是前两种方法目前只支持 Python2.7，且支持的 tensorflow 的版本都比较低。所以我使用的第三种方法。</p>
+<h2 id="搭建训练环境">搭建训练环境</h2>
+<h3 id="使用-juypter-notebook-进行数据清洗">使用 Juypter Notebook 进行数据清洗</h3>
+<p>根据<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/zh_cn/sagemaker/latest/dg/gs-setup-working-env.html">文档指引</a>，我们首先需要新建一个 Jupyter Notebook 实例。在创建过程中，我们需要指定其可访问的 S3 bucket。这样 AWS 就会自动赋予 Jupyter Notebook 合适的 IAM 权限。</p>
+<p>在创建完 Juypter Notebook 实例后，我们就可以正式开工了。不过在开始前我们可以看看 Jupyter Notebook 内部预置了哪些东西。</p>
+<p>如果我们仅仅使用 Juypter Notebook 进行训练，那么直接将清洗后的数据放在 Juypter Notebook 里面就可以了。但如果我们需要 AWS 提供的训练服务，就还是需要将清洗完的数据推送回 S3 上。</p>
+<h3 id="上传数据到-s3">上传数据到 S3</h3>
+<p>虽然 Juypter Notebook 也可以直接访问外网从外部获取数据，但还是建议专门建立一个 Bucket 用于 SageMaker。我的脑波数据加起来估计也就几百 Mb， 这一部分我是直接从阿里云上采集数据，并使用 pickle 序列化，再丢到 S3 上去的。可以在 Juypter Notebook 直接调用 SageMaker 的函数上传至 S3。其中 <code>data</code> 文件夹下为需要上传的数据（比如一个 pickle 序列化的 <code>output_dict</code> 文件）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sagemaker</span><br><span class="line">sagemaker_session = sagemaker.Session()</span><br><span class="line">inputs = sagemaker_session.upload_data(path=<span class="string">&#x27;data&#x27;</span>, key_prefix=<span class="string">&#x27;data/&#x27;</span>+algorithm_name)</span><br></pre></td></tr></table></figure>
+<h3 id="构建训练-docker-image">构建训练 Docker image</h3>
+<p>训练任务本质上是以 Docker image 的形式提交给 SageMaker 运算的，一般而言在正式提交到训练集群前，我们会希望使用小数据集验证训练的可行性。因此我们会将打包出来的 Docker image，先直接在 Jupyter Notebook 的环境下直接运行，没问题后再提交给 SageMaker 进行运算。整个过程可以参考<a target="_blank" rel="noopener" href="https://github.com/awslabs/amazon-sagemaker-examples/blob/master/advanced_functionality/scikit_bring_your_own/scikit_bring_your_own.ipynb">SageMaker 例程</a>。我编写的结构是这样的</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">├── test_dir</span><br><span class="line">│   ├── input</span><br><span class="line">│   │   └── data</span><br><span class="line">│   │       └── training</span><br><span class="line">│   │           └── output_dict</span><br><span class="line">│   ├── model</span><br><span class="line">│   └── output</span><br><span class="line">├── build_and_push.sh</span><br><span class="line">├── Dockerfile</span><br><span class="line">├── train</span><br><span class="line">├── train.py</span><br><span class="line">└── train_local.sh</span><br></pre></td></tr></table></figure>
+<h4 id="test_dir"><code>test_dir</code></h4>
+<p><code>test_dir</code> 储存了用于本地训练（就是直接在 Jupter notebook 里面训练）的数据。<code>test_dir</code> 里面有一些复杂的文件夹结构，稍后解释。现在只需要知道 <code>test_dir</code> 内的内容提供了本地训练的数据。</p>
+<h4 id="build_and_push.sh">build_and_push.sh</h4>
+<p><code>build_and_push.sh</code> 是一个打包 Docker 镜像并将其推送到 ECR 的脚本。ECR 是 AWS 提供的<a target="_blank" rel="noopener" href="https://amazonaws-china.com/cn/ecs/?nc2=h_m1">镜像托管服务</a>。这个脚本由 SageMaker 提供</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># build_and_push.sh</span></span><br><span class="line"><span class="comment">#!/usr/bin/env bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># This script shows how to build the Docker image and push it to ECR to be ready for use</span></span><br><span class="line"><span class="comment"># by SageMaker.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The argument to this script is the image name. This will be used as the image on the local</span></span><br><span class="line"><span class="comment"># machine and combined with the account and region to form the repository name for ECR.</span></span><br><span class="line">image=<span class="variable">$1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ <span class="string">&quot;<span class="variable">$image</span>&quot;</span> == <span class="string">&quot;&quot;</span> ]</span><br><span class="line"><span class="keyword">then</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;Usage: <span class="variable">$0</span> &lt;image-name&gt;&quot;</span></span><br><span class="line">    <span class="built_in">exit</span> 1</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">chmod +x train</span><br><span class="line"></span><br><span class="line"><span class="comment"># Get the account number associated with the current IAM credentials</span></span><br><span class="line">account=$(aws sts get-caller-identity --query Account --output text)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ $? -ne 0 ]</span><br><span class="line"><span class="keyword">then</span></span><br><span class="line">    <span class="built_in">exit</span> 255</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Get the region defined in the current configuration (default to us-west-2 if none defined)</span></span><br><span class="line">region=$(aws configure get region)</span><br><span class="line">region=<span class="variable">$&#123;region:-us-west-2&#125;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">fullname=<span class="string">&quot;<span class="variable">$&#123;account&#125;</span>.dkr.ecr.<span class="variable">$&#123;region&#125;</span>.amazonaws.com/<span class="variable">$&#123;image&#125;</span>:latest&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># If the repository doesn&#x27;t exist in ECR, create it.</span></span><br><span class="line"></span><br><span class="line">aws ecr describe-repositories --repository-names <span class="string">&quot;<span class="variable">$&#123;image&#125;</span>&quot;</span> &gt; /dev/null 2&gt;&amp;1</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ $? -ne 0 ]</span><br><span class="line"><span class="keyword">then</span></span><br><span class="line">    aws ecr create-repository --repository-name <span class="string">&quot;<span class="variable">$&#123;image&#125;</span>&quot;</span> &gt; /dev/null</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Get the login command from ECR and execute it directly</span></span><br><span class="line">$(aws ecr get-login --region <span class="variable">$&#123;region&#125;</span> --no-include-email)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Build the docker image locally with the image name and then push it to ECR</span></span><br><span class="line"><span class="comment"># with the full name.</span></span><br><span class="line"></span><br><span class="line">docker build  -t <span class="variable">$&#123;image&#125;</span> .</span><br><span class="line">docker tag <span class="variable">$&#123;image&#125;</span> <span class="variable">$&#123;fullname&#125;</span></span><br><span class="line"></span><br><span class="line">docker push <span class="variable">$&#123;fullname&#125;</span></span><br></pre></td></tr></table></figure>
+<h4 id="dockerfile"><code>Dockerfile</code></h4>
+<p>这个文件定义了我们的训练镜像。</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> tensorflow/tensorflow:latest-py3</span><br><span class="line"><span class="keyword">MAINTAINER</span> zjuturtle</span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> pip3 install --no-cache-dir --upgrade numpy \</span></span><br><span class="line"><span class="bash">    h5py\</span></span><br><span class="line"><span class="bash">    py-cpuinfo\</span></span><br><span class="line"><span class="bash">    psutil\</span></span><br><span class="line"><span class="bash">    keras</span></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> train /usr/src/app/</span></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> train.py /usr/src/app/</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /usr/src/app</span></span><br><span class="line"><span class="keyword">ENTRYPOINT</span><span class="bash"> [<span class="string">&quot;/bin/bash&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+<p>注意</p>
+<ul>
+<li>我们只把 <code>train</code> <code>train.py</code> 两个文件打入了镜像。</li>
+<li>指定了 ENTRYPOINT，方便未来扩展参数（可以参考<a href="https://zjuturtle.com/2018/06/20/docker-run-cmd-entrypoint/">上一篇博客</a>）</li>
+</ul>
+<h4 id="train.py"><code>train.py</code></h4>
+<p><code>train.py</code> 则提供了真正的训练代码（包括了模型定义）。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> tensorflow.python.client <span class="keyword">import</span> device_lib</span><br><span class="line"><span class="keyword">from</span> keras.models <span class="keyword">import</span> Sequential</span><br><span class="line"><span class="keyword">from</span> keras.layers <span class="keyword">import</span> Dense, Flatten</span><br><span class="line"><span class="keyword">from</span> keras.layers <span class="keyword">import</span> Conv1D, MaxPooling1D, Dropout, Activation, InputLayer, Flatten</span><br><span class="line"><span class="keyword">import</span> keras</span><br><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> cpuinfo</span><br><span class="line"><span class="keyword">import</span> psutil</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_info</span>():</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;****************Hardware****************&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;cpu info: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(cpuinfo.get_cpu_info()[<span class="string">&#x27;brand&#x27;</span>]))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;cpu cores: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(psutil.cpu_count()))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;physical memory: &#123;:.2f&#125; GB&#x27;</span>.<span class="built_in">format</span>(psutil.virtual_memory().total / <span class="number">1024</span> / <span class="number">1024</span> / <span class="number">1024</span>))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;****************Software****************&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;python info: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(sys.version))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;tensorflow version: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(tf.__version__))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;tensorflow device info:&#x27;</span>)</span><br><span class="line">    <span class="keyword">for</span> device <span class="keyword">in</span> device_lib.list_local_devices():</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;    [name:&#x27;</span> + device.name + <span class="string">&#x27;]&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">list_files</span>(<span class="params">startpath</span>):</span></span><br><span class="line">    <span class="keyword">for</span> root, dirs, files <span class="keyword">in</span> os.walk(startpath):</span><br><span class="line">        level = root.replace(startpath, <span class="string">&#x27;&#x27;</span>).count(os.sep)</span><br><span class="line">        indent = <span class="string">&#x27; &#x27;</span> * <span class="number">4</span> * (level)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;&#123;&#125;&#123;&#125;/&#x27;</span>.<span class="built_in">format</span>(indent, os.path.basename(root)))</span><br><span class="line">        subindent = <span class="string">&#x27; &#x27;</span> * <span class="number">4</span> * (level + <span class="number">1</span>)</span><br><span class="line">        <span class="keyword">for</span> f <span class="keyword">in</span> files:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;&#123;&#125;&#123;&#125;&#x27;</span>.<span class="built_in">format</span>(subindent, f))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">load_data_from_s3</span>():</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;***************Load Data***************&#x27;</span>)</span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;/opt/ml/input/data/training/output_dict&#x27;</span>, <span class="string">&#x27;rb&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">        <span class="keyword">return</span> pickle.load(f)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_model</span>():</span></span><br><span class="line">    model = Sequential(name=<span class="string">&#x27;mlp&#x27;</span>)</span><br><span class="line">    model.add(InputLayer([<span class="number">2000</span>]))</span><br><span class="line">    model.add(Dense(<span class="number">1024</span>, activation=<span class="string">&#x27;tanh&#x27;</span>))</span><br><span class="line">    model.add(Dense(<span class="number">512</span>, activation=<span class="string">&#x27;tanh&#x27;</span>))</span><br><span class="line">    model.add(Dense(<span class="number">256</span>, activation=<span class="string">&#x27;tanh&#x27;</span>, ))</span><br><span class="line">    model.add(Dense(<span class="number">64</span>, activation=<span class="string">&#x27;tanh&#x27;</span>, ))</span><br><span class="line">    model.add(Dense(<span class="number">2</span>, activation=<span class="string">&#x27;softmax&#x27;</span>))</span><br><span class="line">    model.<span class="built_in">compile</span>(<span class="string">&quot;adam&quot;</span>, <span class="string">&quot;categorical_crossentropy&quot;</span>, metrics=[<span class="string">&quot;accuracy&quot;</span>])</span><br><span class="line">    model.summary()</span><br><span class="line">    <span class="keyword">return</span> model</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">normalize</span>(<span class="params">x</span>):</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(x.shape[<span class="number">0</span>]):</span><br><span class="line">        x[i] = x[i] / (np.<span class="built_in">sum</span>(x[i]))</span><br><span class="line">    <span class="keyword">return</span> x</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">train</span>():</span></span><br><span class="line">    <span class="comment"># print_info()</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;**************Model Define**************&#x27;</span>)</span><br><span class="line">    model = make_model()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;*************Start training*************&#x27;</span>)</span><br><span class="line">    data_dict = load_data_from_s3()</span><br><span class="line">    x_train = data_dict[<span class="string">&#x27;x_train&#x27;</span>]</span><br><span class="line">    y_train_one_hot = data_dict[<span class="string">&#x27;y_train2&#x27;</span>]</span><br><span class="line">    x_test = data_dict[<span class="string">&#x27;x_test&#x27;</span>]</span><br><span class="line">    y_test_one_hot = data_dict[<span class="string">&#x27;y_test2&#x27;</span>]</span><br><span class="line">    </span><br><span class="line">    model.fit(fft_x, y_train_one_hot, verbose=<span class="number">2</span>, validation_data=(x_test, y_test_one_hot), epochs=<span class="number">100</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    train()</span><br></pre></td></tr></table></figure>
+<p>注意到这个模型的训练数据来自于 <code>/opt/ml/input/data/training/output_dict</code>。 这个和 <code>test_dir</code> 的层级十分类似。</p>
+<h4 id="train"><code>train</code></h4>
+<p><code>train</code> 仅仅是一个简单的脚本，这个的存在和 SageMaker 调用方式有关</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python train.py</span><br></pre></td></tr></table></figure>
+<p>注意到我们在打包镜像的时候并没有包括训练数据，而在这里我们直接使用了 <code>/opt/ml/</code> 下的训练数据。实际上当 SageMaker 接收到我们提交的训练任务时，它干了以下两件事</p>
+<ul>
+<li>将 S3 上的数据映射到 <code>/opt/ml/</code> 上</li>
+<li>运行 <code>docker run train</code></li>
+</ul>
+<p>我们在之前的 Dockerfile 里面定义了 <code>ENTRYPOINT</code>，那么最终的运行指令就是</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/bin/bash train</span><br></pre></td></tr></table></figure>
+<p>即会通过运行 <code>train</code> 脚本来执行训练。</p>
+<h4 id="train_local.sh"><code>train_local.sh</code></h4>
+<p>用于本地训练测试</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"></span><br><span class="line">image=<span class="variable">$1</span></span><br><span class="line"></span><br><span class="line">mkdir -p test_dir/model</span><br><span class="line">mkdir -p test_dir/output</span><br><span class="line">mkdir -p test_dir/input</span><br><span class="line"></span><br><span class="line">rm test_dir/model/*</span><br><span class="line">rm test_dir/output/*</span><br><span class="line">rm -r test_dir/input/*</span><br><span class="line">mkdir -p test_dir/input/data/training/</span><br><span class="line"></span><br><span class="line">cp ../data/* test_dir/input/data/training/</span><br><span class="line"></span><br><span class="line">docker run -v $(<span class="built_in">pwd</span>)/test_dir:/opt/ml --rm <span class="variable">$&#123;image&#125;</span> train</span><br></pre></td></tr></table></figure>
+<p>这里需要注意的是最后一行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -v $(<span class="built_in">pwd</span>)/test_dir:/opt/ml --rm <span class="variable">$&#123;image&#125;</span> train</span><br></pre></td></tr></table></figure>
+<p>模拟了 SageMaker 的操作方式。SageMaker 在训练时会将 S3 上的数据映射到 <code>/opt/ml/input/data/training/</code>，直接本地训练我们将将<code>test_dir</code> 映射到 <code>/opt/ml</code> 下。</p>
+<h2 id="提交训练任务">提交训练任务</h2>
+<p>在 Jupyter Notebook 的终端里运行下面的指令，打包训练镜像并推送到 ECR 上。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./build_and_push.sh <span class="variable">$&#123;ALGORITHM_NAME&#125;</span></span><br></pre></td></tr></table></figure>
+<p>在 Jupyter Notebook 的终端里运行下面的指令，测试训练镜像。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./train_local.sh <span class="variable">$&#123;ALGORITHM_NAME&#125;</span></span><br></pre></td></tr></table></figure>
+<p>在 Jupyter Notebook 内将训练任务提交到 SageMaker 进行训练。这里的 <code>inputs</code> 是之前通过 SageMaker 的 API 上传到 S3 的返回值。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">image = <span class="string">&#x27;&#123;&#125;.dkr.ecr.&#123;&#125;.amazonaws.com/&#123;&#125;:latest&#x27;</span>.<span class="built_in">format</span>(account, region, algorithm_name)</span><br><span class="line">network = sage.estimator.Estimator(image,</span><br><span class="line">                       role, <span class="number">1</span>, <span class="string">&#x27;ml.m5.large&#x27;</span>,</span><br><span class="line">                       output_path=<span class="string">&quot;s3://&#123;&#125;/output&quot;</span>.<span class="built_in">format</span>(sess.default_bucket()),</span><br><span class="line">                       sagemaker_session=sess)</span><br><span class="line">network.fit(inputs)</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Docker/" rel="tag"># Docker</a>
+              <a href="/tags/Machine-Learning/" rel="tag"># Machine Learning</a>
+              <a href="/tags/SageMaker/" rel="tag"># SageMaker</a>
+              <a href="/tags/Jupyter-Notebook/" rel="tag"># Jupyter Notebook</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/06/20/docker-run-cmd-entrypoint/" rel="prev" title="Docker 中 RUN/CMD/ENTRYPOINT 详解">
+                  <i class="fa fa-chevron-left"></i> Docker 中 RUN/CMD/ENTRYPOINT 详解
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/06/22/lz-complexity/" rel="next" title="Lempel-Ziv complexity 详解">
+                  Lempel-Ziv complexity 详解 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"5a7cac9e2415562ce30c3f40f5f1f1e7"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

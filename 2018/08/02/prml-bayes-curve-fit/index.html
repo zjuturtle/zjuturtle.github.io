@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="整本 PRML 翻来覆去地讲贝叶斯思想。这里做一些与贝叶斯有关的内容的笔记。本来是做成一篇博客的，但奈何实在太长，分为3个部分来发。今天先讲贝叶斯多项式曲线拟合。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PRML笔记 - 贝叶斯多项式曲线拟合">
+<meta property="og:url" content="https://zjuturtle.com/2018/08/02/prml-bayes-curve-fit/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="整本 PRML 翻来覆去地讲贝叶斯思想。这里做一些与贝叶斯有关的内容的笔记。本来是做成一篇博客的，但奈何实在太长，分为3个部分来发。今天先讲贝叶斯多项式曲线拟合。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-08-02T06:57:13.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.647Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="PRML">
+<meta property="article:tag" content="贝叶斯">
+<meta property="article:tag" content="曲线拟合">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2018/08/02/prml-bayes-curve-fit/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2018/08/02/prml-bayes-curve-fit/","path":"2018/08/02/prml-bayes-curve-fit/","title":"PRML笔记 - 贝叶斯多项式曲线拟合"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>PRML笔记 - 贝叶斯多项式曲线拟合 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%A6%82%E7%8E%87"><span class="nav-number">1.</span> <span class="nav-text">贝叶斯概率</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%A4%9A%E9%A1%B9%E5%BC%8F%E6%9B%B2%E7%BA%BF%E6%8B%9F%E5%90%88"><span class="nav-number">2.</span> <span class="nav-text">贝叶斯多项式曲线拟合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E9%AB%98%E6%96%AF%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.</span> <span class="nav-text">使用高斯模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%80%83%E8%99%91%E5%85%88%E9%AA%8C%E4%BF%A1%E6%81%AF"><span class="nav-number">4.</span> <span class="nav-text">考虑先验信息</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2018/08/02/prml-bayes-curve-fit/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PRML笔记 - 贝叶斯多项式曲线拟合
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-08-02 14:57:13" itemprop="dateCreated datePublished" datetime="2018-08-02T14:57:13+08:00">2018-08-02</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>整本 PRML 翻来覆去地讲贝叶斯思想。这里做一些与贝叶斯有关的内容的笔记。本来是做成一篇博客的，但奈何实在太长，分为3个部分来发。今天先讲贝叶斯多项式曲线拟合。</p>
+<span id="more"></span>
+<h2 id="贝叶斯概率">贝叶斯概率</h2>
+<p>我们先通过一个简单的推导得到贝叶斯公式。假设有联合分布 <span class="math inline">\(P(X,Y)\)</span>，我们容易有<span class="math inline">\(P(X,Y)=P(X|Y)P(Y)=P(Y|X)P(X)\)</span>。因此可以推断得到贝叶斯公式如下</p>
+<p><span class="math display">\[P(Y|X)=\frac{P(X|Y)P(Y)}{P(X)}\]</span></p>
+<p>以上这个公式就是一切的<del>万恶之源</del>基石，接下来我们看看基于这个公式都能干些啥。</p>
+<h2 id="贝叶斯多项式曲线拟合">贝叶斯多项式曲线拟合</h2>
+<p>我们考虑一个多项式拟合问题。假设我们的模型为 <span class="math inline">\(y(x, \boldsymbol{w})=\sum_{j=0}^{M}w_jx^j\)</span> 。 <span class="math inline">\(M\)</span> 为多项式阶数，多项式系数 <span class="math inline">\(w_0,...,w_M\)</span> 整体记为 <span class="math inline">\(\boldsymbol{w}\)</span>。假设我们有 <span class="math inline">\(N\)</span> 个带噪声的观测数据 <span class="math inline">\(\boldsymbol{D}=\{t_1, ..., t_N\}\)</span>，其对应的输入为<span class="math inline">\(\boldsymbol{X}=\{x_1,...,x_N\}\)</span>。我们最终需要求的是多项式系数 <span class="math inline">\(\boldsymbol{w}\)</span>。</p>
+<p>注意到贝叶斯定理可以将观测到的数据融合，来把先验概率转化为后验概率。根据贝叶斯公式，我们有</p>
+<p><span class="math display">\[ p(\boldsymbol{w} | \boldsymbol{D}) = \frac{p(\boldsymbol{D} | \boldsymbol{w})p(\boldsymbol{w})}{p(\boldsymbol{D})}\]</span></p>
+<p>解释一下公式里各项的含义</p>
+<ul>
+<li><span class="math inline">\(p(\boldsymbol{D})\)</span> 即为后验概率。</li>
+<li><span class="math inline">\(p(\boldsymbol{w})\)</span> 为先验概率，包含了在观测到数据前关于 <span class="math inline">\(\boldsymbol{w}\)</span> 的一些假设。</li>
+<li><span class="math inline">\(p(\boldsymbol{D} | \boldsymbol{w})\)</span> 由观测数据集 <span class="math inline">\(\boldsymbol{D}\)</span>，可以认为是 <span class="math inline">\(\boldsymbol{w}\)</span> 的函数，也被称为似然函数。表达了在不同 <span class="math inline">\(\boldsymbol{w}\)</span> 下，观测数据出现的可能性大小。注意它不是 <span class="math inline">\(\boldsymbol{w}\)</span> 的概率分布，因此它关于 <span class="math inline">\(\boldsymbol{w}\)</span> 的积分一般不为 1</li>
+<li><span class="math inline">\(p(\boldsymbol{D})\)</span> 可以认为是一个归一化系数，确保公式右侧的积分为 1</li>
+</ul>
+<p>用自然语言来表述就是：后验概率正比于似然函数与先验概率的乘积。这三者都可以认为是 <span class="math inline">\(\boldsymbol{w}\)</span> 的函数。实际上对上面公式做关于 <span class="math inline">\(\boldsymbol{w}\)</span> 的积分，我们就可以求得 <span class="math inline">\(p(\boldsymbol{D})\)</span></p>
+<p><span class="math display">\[p(\boldsymbol{D}) = \int p(\boldsymbol{D} | \boldsymbol{w})p(\boldsymbol{w})d\boldsymbol{w}\]</span></p>
+<p>根据后验概率 <span class="math inline">\(p(\boldsymbol{w} | \boldsymbol{D})\)</span>，我们能估计在观测到 <span class="math inline">\(p(\boldsymbol{D})\)</span> 之后 <span class="math inline">\(\boldsymbol{w}\)</span> 的不确定性。</p>
+<h2 id="使用高斯模型">使用高斯模型</h2>
+<p>让我们回到多项式拟合上来。我们假设观测的噪声符合高斯分布，那么给定 <span class="math inline">\(x\)</span> 的值，对应的 <span class="math inline">\(t\)</span> 值服从高斯分布，分布的均值为 <span class="math inline">\(y(x, \boldsymbol{w})\)</span>，方差为 <span class="math inline">\(\beta^{-1}\)</span>。<span class="math inline">\(\beta\)</span> 为精度参数，即方差的倒数。根据以上假设，我们有</p>
+<p><span class="math display">\[p(t | x, \boldsymbol{w},\beta) = \mathscr{N}(t | y(x, \boldsymbol{w},\beta^{-1})) \]</span></p>
+<p>通过训练数据 <span class="math inline">\(\{ \boldsymbol{X}, \boldsymbol{D}\}\)</span>，我们可以得到似然函数为</p>
+<p><span class="math display">\[p(\boldsymbol{D} | \boldsymbol{X}, \boldsymbol{w}, \beta) = \prod_{n=1}^{N} \mathscr{N}(t_n | y(x_n, \boldsymbol{w}), \beta^{-1})\]</span></p>
+<p>取对数有</p>
+<p><span class="math display">\[ \ln p(\boldsymbol{D} | \boldsymbol{X}, \boldsymbol{w}, \beta)=-\frac{\beta}2\sum{\{y(x_n, \boldsymbol{w})-t_n \}^2} + \frac N 2 \ln \beta - \frac N 2 \ln(2 \pi )\]</span></p>
+<p>考虑多项式系数的最大似然解 <span class="math inline">\(\boldsymbol{w}_{ML}\)</span>，后两项以及前面的 $ $ 系数可以去掉。最大化似然函数其实就是最小化平方和误差，如下</p>
+<p><span class="math display">\[ \boldsymbol{w}_{ML}=min \sum{\{y(x_n, \boldsymbol{w})-t_n \}^2} \]</span></p>
+<p>也可以用最大似然方法确定高斯条件分布的精度参数 <span class="math inline">\(\beta\)</span>。对其求关于 <span class="math inline">\(\boldsymbol{w}\)</span> 的偏导数，并令其导数为 0，有</p>
+<p><span class="math display">\[\frac 1 {\beta_{ML}} = \frac 1 N \sum_{n=1}^N \{y(x_n, \boldsymbol{w}_{ML})-t_n \}^2\]</span></p>
+<p>根据以上确定的 <span class="math inline">\(\boldsymbol{w}\)</span> 和 <span class="math inline">\(\beta_{ML}\)</span>，便可以对新的 <span class="math inline">\(x\)</span> 值进行预测。其预测可以通过 <span class="math inline">\(t\)</span> 的概率分布给出</p>
+<p><span class="math display">\[p(t | x, \boldsymbol{w}_{ML},\beta_{ML})=\mathscr{N}(t|y(x,\boldsymbol{w}_{ML}), {\beta_{ML}}^{-1})\]</span></p>
+<h2 id="考虑先验信息">考虑先验信息</h2>
+<p>但这个所谓的预测并没有考虑先验概率，我们需要把它加上。我们假设 <span class="math inline">\(\boldsymbol{w}\)</span> 的先验分布为</p>
+<p><span class="math display">\[p(\boldsymbol{w} | \alpha) = \mathscr{N}(\boldsymbol{w}|\boldsymbol{0},{\alpha}^{-1} \boldsymbol{I})=(\frac{\alpha}{2 \pi})^{(M+1)/2}exp\{-\frac{\alpha}{2}\boldsymbol{w}^T\boldsymbol{w}\}\]</span></p>
+<p>根据之前的表述后验概率正比于似然函数与先验概率的乘积，我们有</p>
+<p><span class="math display">\[p(\boldsymbol{w}| \boldsymbol{X},\boldsymbol{D},\alpha,\beta) \propto p(\boldsymbol{D}|\boldsymbol{X},\boldsymbol{w},\beta)p(\boldsymbol{w}|\alpha)\]</span></p>
+<p>最大化后验概率称为 MAP 方法。对上式取对数后再求极值，后验概率取最大意味着下面这个式子取得最小值</p>
+<p><span class="math display">\[\frac{\beta}2 \sum^{N}_{n=1} {\{y(x_n, \boldsymbol{w}-t_n)\}}^2+\frac{\alpha}2 \boldsymbol{w}^T\boldsymbol{w}\]</span></p>
+<p>等一下，这个式子看起来是不是特别眼熟。没错，它其实是和带了正则惩罚项的最小二乘多项式拟合是一样的。在带正则惩罚的最小二乘多项式拟合中，式子如下</p>
+<p><span class="math display">\[Error(\boldsymbol{w})=\frac{1}{2} \sum^N_{n=1}{\{y(x_n, \boldsymbol{w}-t_n)\}}^2+ \frac{\lambda}2\boldsymbol{w}^T\boldsymbol{w}\]</span></p>
+<p>其实将 <span class="math inline">\(\lambda= \frac{\alpha}{\beta}\)</span> 带入，可以发现二者是等价的。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/PRML/" rel="tag"># PRML</a>
+              <a href="/tags/%E8%B4%9D%E5%8F%B6%E6%96%AF/" rel="tag"># 贝叶斯</a>
+              <a href="/tags/%E6%9B%B2%E7%BA%BF%E6%8B%9F%E5%90%88/" rel="tag"># 曲线拟合</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/07/01/go-alone/" rel="prev" title="踽踽独行">
+                  <i class="fa fa-chevron-left"></i> 踽踽独行
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/08/10/prml-bayes-beta/" rel="next" title="PRML笔记 - 贝叶斯与 Beta 分布">
+                  PRML笔记 - 贝叶斯与 Beta 分布 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"7d92c7756b713f3f8c1278ba7c7e02f6"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

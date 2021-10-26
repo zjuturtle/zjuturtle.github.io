@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="公司需要一个离线的分析系统，我打算直接在阿里云上开N台按量付费的机子然后一起跑。整个系统打算使用 Docker、Spark 来搞。即在阿里云的机子上先搭一层 Docker ，然后在 Docker 的基础上搭建 Spark 的集群。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker 部署 Spark">
+<meta property="og:url" content="https://zjuturtle.com/2017/05/17/docker-spark/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="公司需要一个离线的分析系统，我打算直接在阿里云上开N台按量付费的机子然后一起跑。整个系统打算使用 Docker、Spark 来搞。即在阿里云的机子上先搭一层 Docker ，然后在 Docker 的基础上搭建 Spark 的集群。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-05-17T08:22:09.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.629Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="Spark">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2017/05/17/docker-spark/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2017/05/17/docker-spark/","path":"2017/05/17/docker-spark/","title":"Docker 部署 Spark"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Docker 部署 Spark | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#docker"><span class="nav-number">1.</span> <span class="nav-text">Docker</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#spark"><span class="nav-number">2.</span> <span class="nav-text">Spark</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#docker-%E7%BD%91%E7%BB%9C"><span class="nav-number">3.</span> <span class="nav-text">Docker 网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2"><span class="nav-number">4.</span> <span class="nav-text">部署</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2017/05/17/docker-spark/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Docker 部署 Spark
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2017-05-17 16:22:09" itemprop="dateCreated datePublished" datetime="2017-05-17T16:22:09+08:00">2017-05-17</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/TechChatter/" itemprop="url" rel="index"><span itemprop="name">TechChatter</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>公司需要一个离线的分析系统，我打算直接在阿里云上开N台按量付费的机子然后一起跑。整个系统打算使用 Docker、Spark 来搞。即在阿里云的机子上先搭一层 Docker ，然后在 Docker 的基础上搭建 Spark 的集群。</p>
+<span id="more"></span>
+<h2 id="docker">Docker</h2>
+<p>讲真 Docker 是好东西，拿来批量部署简直爽。</p>
+<p>由于众所周知的原因，从国外网站拖东西是很慢的，需要一些梯子。Docker for Mac自带一个代理设置，不过这个代理简直了。我的 Surge 的 HTTP 代理默认挂在127.0.0.1上面，但是Docker总是搞不清楚127.0.0.1指的是自己还是指的本机。瞎几把折腾了一段时间姑且有了一个临时的解决方案。</p>
+<p>参考<a target="_blank" rel="noopener" href="https://docs.docker.com/docker-for-mac/networking/#there-is-no-docker0-bridge-on-macos">文档</a>，Docker for mac 的实现有些不太一样，它的 host 其实是在 mac 上的一个虚拟机，而不是 mac 本身。理论上只要让 Docker 能分清楚自己（作为虚拟机的 host ）和本机的区别就可以，因此我做了以下操作：</p>
+<ul>
+<li>将 Surge 的<code>HTTP_PROXY</code>设成一个不用的IP地址（比如10.200.10.1:6152），可能需要重启Surge</li>
+<li>sudo ifconfig lo0 alias 10.200.10.1</li>
+<li>将 Docker 的代理设置为10.200.10.1:6152</li>
+</ul>
+<p>这样 Docker 就会走10.200.10.1的代理，然后10.200.10.1是本机的别名，同时 Surge 的代理也是如此，因此解决了127.0.0.1的重名问题</p>
+<p>唯一的遗留问题是如果真的有某个倒霉的设备IP地址是10.200.10.1。恩...这种事情一定不会发生的，对吧？</p>
+<h2 id="spark">Spark</h2>
+<p>我打算以一个 Ubuntu 的 images 为基础，在上面搭上环境，再 docker save 出来，不知道有没有更好的方法，不过先这么着吧。</p>
+<p>其实 Docker 提供的 Ubuntu 镜像很小，也就意味着它毛都没有。因此需要自己动手装 python、gcc、make、vim 之类的软件（谢天谢地 apt 它还是有的）。</p>
+<p>整一个 Dockerfile 如下，注意包里直接包含了 jdk 和 spark</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">FROM ubuntu:16.04</span><br><span class="line">WORKDIR /app</span><br><span class="line">ADD . /app</span><br><span class="line">RUN mkdir local</span><br><span class="line">RUN tar -zxf jdk-8u131-linux-x64.tar.gz &amp;&amp; rm jdk-8u131-linux-x64.tar.gz &amp;&amp; mv jdk1.8.0_131 local/jdk</span><br><span class="line">RUN tar -zxf spark-2.1.0-bin-hadoop2.7.tgz &amp;&amp; rm spark-2.1.0-bin-hadoop2.7.tgz &amp;&amp; mv spark-2.1.0-bin-hadoop2.7 local/spark</span><br><span class="line">RUN unset http_proxy HTTP_PROXY https_proxy HTTPS_PROXY</span><br><span class="line">RUN apt-get update &amp;&amp; apt-get install -y \</span><br><span class="line">        python3 \</span><br><span class="line">        gcc \</span><br><span class="line">        make \</span><br><span class="line">        vim</span><br><span class="line">ENV JAVA_HOME=/app/local/jdk</span><br><span class="line">ENV PATH $JAVA_HOME/bin:$PATH</span><br><span class="line">ENV PYSPARK_PYTHON=python3</span><br></pre></td></tr></table></figure>
+<p>Spark 的 Master 启动脚本<code>start-master.sh</code>如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#! /bin/bash</span></span><br><span class="line"><span class="comment"># start-master.sh</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># start spark master</span></span><br><span class="line">/app/<span class="built_in">local</span>/spark/sbin/start-master.sh&gt;/dev/null</span><br><span class="line"></span><br><span class="line"><span class="comment"># show log file</span></span><br><span class="line">logFileList=($(find /app/<span class="built_in">local</span>/spark/logs -name <span class="string">&quot;*.out&quot;</span>))</span><br><span class="line"><span class="keyword">if</span> [ <span class="variable">$&#123;#logFileList[*]&#125;</span> -gt 1 ];<span class="keyword">then</span> </span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&#x27;[WARN]logfile is not unique&#x27;</span></span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"><span class="keyword">if</span> [ <span class="variable">$&#123;#logFileList[*]&#125;</span> -eq 0 ];<span class="keyword">then</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&#x27;[WARN]logfile not exits&#x27;</span></span><br><span class="line">    <span class="built_in">exit</span> 1</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line">logFile=<span class="variable">$&#123;logFileList[0]&#125;</span></span><br><span class="line">tail -f <span class="variable">$&#123;logFile&#125;</span></span><br></pre></td></tr></table></figure>
+<p>Spark 的 Slave 启动脚本<code>start-slave.sh</code>如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#! /bin/bash</span></span><br><span class="line"><span class="comment"># start-slave.sh</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># start spark master</span></span><br><span class="line">/app/<span class="built_in">local</span>/spark/sbin/start-slave.sh <span class="variable">$1</span>&gt;/dev/null</span><br><span class="line"></span><br><span class="line"><span class="comment"># show log file</span></span><br><span class="line">logFileList=($(find /app/<span class="built_in">local</span>/spark/logs -name <span class="string">&quot;*.out&quot;</span>))</span><br><span class="line"><span class="keyword">if</span> [ <span class="variable">$&#123;#logFileList[*]&#125;</span> -gt 1 ];<span class="keyword">then</span> </span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&#x27;[WARN]logfile is not unique&#x27;</span></span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"><span class="keyword">if</span> [ <span class="variable">$&#123;#logFileList[*]&#125;</span> -eq 0 ];<span class="keyword">then</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&#x27;[WARN]logfile not exits&#x27;</span></span><br><span class="line">    <span class="built_in">exit</span> 1</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line">logFile=<span class="variable">$&#123;logFileList[0]&#125;</span></span><br><span class="line">tail -f <span class="variable">$&#123;logFile&#125;</span></span><br></pre></td></tr></table></figure>
+<p>启动脚本的最后一行是<code>tail -f $&#123;logFile&#125;</code>，也就是说会把日志丢到 container 的 STDOUT 中。用<code>docker logs [containerID]</code>就可以查看日志啦</p>
+<p>在 docker 下的启动命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -p 8088:8088 -p 4040:4040 -p 7077:7077 -p 8080:8080 -p 6066:6066 --name=sparkMaster <span class="built_in">local</span>/sparkcluster /app/start-master.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name=sparkSlave <span class="built_in">local</span>/sparkcluster /app/start-slave.sh [IP:port]</span><br></pre></td></tr></table></figure>
+<h2 id="docker-网络">Docker 网络</h2>
+<p>其实关于 Docker 的 network 部分我捣鼓了好久，也没有什么特别好的解决方案。对于 Docker 而言，一个 container 可以根据 --network 参数指定它的 network 类型。默认情况下网络类型是 bridge，其余还有 host 和 none 两种。参照 Docker 的<a target="_blank" rel="noopener" href="https://docs.docker.com/engine/reference/run/#network-settings">文档</a>，理想情况下为了提升性能应该使用 host 模式，注意这里的措辞是 significantly.</p>
+<blockquote>
+<p>Compared to the default bridge mode, the host mode gives significantly better networking performance since it uses the host’s native networking stack whereas the bridge has to go through one level of virtualization through the docker daemon. It is recommended to run containers in this mode when their networking performance is critical, for example, a production Load Balancer or a High Performance Web Server.</p>
+</blockquote>
+<p>但在我那高贵的 mac 上，指定 <code>network=host</code> 好像是不行的。详细的原因是 Docker for Mac 的 Docker 的 host 其实是在一个 HyperKit 虚拟机上，而不是直接在 mac 上。相当于mac上首先架设了一个虚拟机，再在这个虚拟机上运行了 docker ，也就是说这里指定的 host 其实相当于 HyperKit 虚拟机。关于这个问题，可以参考 github 上的 <a target="_blank" rel="noopener" href="https://github.com/docker/for-mac/issues/1031">issue1031</a> 和 <a target="_blank" rel="noopener" href="https://github.com/docker/for-mac/issues/68">issue68</a></p>
+<p>不得已，只能使用默认的 bridge 模式。</p>
+<h2 id="部署">部署</h2>
+<p>在我的本地 Mac 上，通过<code>docker run</code>可以直接跑起来，也能够访问<code>localhost:8080</code>看到 Spark 的控制面板。</p>
+<p>讲道理的话，在阿里云的 ECS 集群上部署还是有点麻烦。因为国内网络的问题，Docker Store 是指望不上了。我的想法其实是把整个 export 出来的镜像放到 OSS 上，然后写一个脚本安装部署。</p>
+<p>远程部署 python 脚本<code>deploy.py</code>，实际的使用中，填好 <code>config.json</code> 直接在本地跑就可以</p>
+<p>设置样例<code>config.example.json</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;master&quot;</span>:&#123;<span class="attr">&quot;IP&quot;</span>:<span class="string">&quot;&quot;</span>,<span class="attr">&quot;password&quot;</span>:<span class="string">&quot;&quot;</span>&#125;,</span><br><span class="line">  <span class="attr">&quot;workers&quot;</span>:[&#123;<span class="attr">&quot;IP&quot;</span>:<span class="string">&quot;&quot;</span>,<span class="attr">&quot;password&quot;</span>:<span class="string">&quot;&quot;</span>&#125;],</span><br><span class="line">  <span class="attr">&quot;end_point&quot;</span>:<span class="string">&quot;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;bucket_name&quot;</span>:<span class="string">&quot;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;access_key_id&quot;</span>:<span class="string">&quot;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;access_key_secret&quot;</span>:<span class="string">&quot;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;oss_docker_image_name&quot;</span>:<span class="string">&quot;sparkCluster.tar&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>docker 部署脚本<code>deploy.py</code> ，注意该部署脚本使用了 threading 模块和 Event 来同时部署多台机器</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> paramiko</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line"><span class="comment"># 载入外部设置</span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;config.json&#x27;</span>, <span class="string">&#x27;r&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    config_data = json.load(f)</span><br><span class="line">MASTER = config_data[<span class="string">&#x27;master&#x27;</span>]</span><br><span class="line">WORKERS = config_data[<span class="string">&#x27;workers&#x27;</span>]</span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;config.json.tmp&#x27;</span>, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> outfile:</span><br><span class="line">    data = <span class="built_in">dict</span>()</span><br><span class="line">    data[<span class="string">&#x27;end_point&#x27;</span>] = config_data[<span class="string">&#x27;end_point&#x27;</span>]</span><br><span class="line">    data[<span class="string">&#x27;bucket_name&#x27;</span>] = config_data[<span class="string">&#x27;bucket_name&#x27;</span>]</span><br><span class="line">    data[<span class="string">&#x27;access_key_id&#x27;</span>] = config_data[<span class="string">&#x27;access_key_id&#x27;</span>]</span><br><span class="line">    data[<span class="string">&#x27;access_key_secret&#x27;</span>] = config_data[<span class="string">&#x27;access_key_secret&#x27;</span>]</span><br><span class="line">    data[<span class="string">&#x27;oss_docker_image_name&#x27;</span>] = config_data[<span class="string">&#x27;oss_docker_image_name&#x27;</span>]</span><br><span class="line">    json.dump(data, outfile)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">docker_spark_start</span>(<span class="params">ip, password, name, run_cmd, event=<span class="literal">None</span></span>):</span></span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;docker_install.sh&#x27;</span>) <span class="keyword">as</span> fo:</span><br><span class="line">        docker_install_cmd = fo.read().splitlines()</span><br><span class="line">    ssh = paramiko.SSHClient()</span><br><span class="line">    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())</span><br><span class="line">    ssh.connect(hostname=ip, port=<span class="number">22</span>, username=<span class="string">&#x27;root&#x27;</span>, password=password)</span><br><span class="line">    sftp = ssh.open_sftp()</span><br><span class="line">    sftp.put(<span class="string">&#x27;get_docker_image.py&#x27;</span>, <span class="string">&#x27;get_docker_image.py&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    sftp.put(<span class="string">&#x27;config.json.tmp&#x27;</span>, <span class="string">&#x27;config.json&#x27;</span>)</span><br><span class="line">    <span class="keyword">for</span> cmd <span class="keyword">in</span> docker_install_cmd:</span><br><span class="line">        stdin, stdout, stderr = ssh.exec_command(cmd)</span><br><span class="line">        <span class="keyword">for</span> line <span class="keyword">in</span> <span class="built_in">iter</span>(<span class="keyword">lambda</span>: stdout.readline(<span class="number">2048</span>), <span class="string">&quot;&quot;</span>):</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;[REMOTE-&#x27;</span> + name + <span class="string">&#x27;][INFO]&#x27;</span> + <span class="built_in">str</span>(line), end=<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">        <span class="keyword">for</span> line <span class="keyword">in</span> <span class="built_in">iter</span>(<span class="keyword">lambda</span>: stderr.readline(<span class="number">2048</span>), <span class="string">&quot;&quot;</span>):</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;[REMOT-&#x27;</span> + name + <span class="string">&#x27;][ERROR]&#x27;</span> + <span class="built_in">str</span>(line), end=<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;[INFO]&#x27;</span>+name+<span class="string">&#x27; install docker spark finish&#x27;</span>)</span><br><span class="line">    <span class="comment"># 使用Event保证Master部署完毕才启动Slave</span></span><br><span class="line">    <span class="keyword">if</span> event <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        event.wait()</span><br><span class="line">    stdin, stdout, stderr = ssh.exec_command(run_cmd)</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> <span class="built_in">iter</span>(<span class="keyword">lambda</span>: stdout.readline(<span class="number">2048</span>), <span class="string">&quot;&quot;</span>):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;[REMOTE-&#x27;</span> + name + <span class="string">&#x27;][INFO]&#x27;</span> + <span class="built_in">str</span>(line), end=<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> <span class="built_in">iter</span>(<span class="keyword">lambda</span>: stderr.readline(<span class="number">2048</span>), <span class="string">&quot;&quot;</span>):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;[REMOTE-&#x27;</span> + name + <span class="string">&#x27;][ERROR]&#x27;</span> + <span class="built_in">str</span>(line), end=<span class="string">&#x27;&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">start_worker</span>(<span class="params">current_worker, worker_index, master_addr, event</span>):</span></span><br><span class="line">    docker_spark_start(current_worker[<span class="string">&#x27;IP&#x27;</span>], current_worker[<span class="string">&#x27;password&#x27;</span>], <span class="string">&#x27;WORKER-&#x27;</span>+<span class="built_in">str</span>(worker_index),</span><br><span class="line">                       <span class="string">&#x27;docker run -d -p 8088:8088 -p 4040:4040 -p 7077:7077 -p 8080:8080 &#x27;</span></span><br><span class="line">                       <span class="string">&#x27;-p 6066:6066 --name=sparkWorker&#x27;</span> + <span class="built_in">str</span>(worker_index) +</span><br><span class="line">                       <span class="string">&#x27; local/sparkcluster /app/start-slave.sh &#x27;</span> + master_addr,</span><br><span class="line">                       event)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">event = threading.Event()</span><br><span class="line">index = <span class="number">0</span></span><br><span class="line">worker_threads = []</span><br><span class="line"><span class="keyword">for</span> worker <span class="keyword">in</span> WORKERS:</span><br><span class="line">    t = threading.Thread(target=start_worker, name=<span class="string">&#x27;WORKER&#x27;</span>+<span class="built_in">str</span>(index),</span><br><span class="line">                         args=(worker, index, MASTER[<span class="string">&#x27;innerIP&#x27;</span>]+<span class="string">&#x27;:7077&#x27;</span>, event))</span><br><span class="line">    t.daemon = <span class="literal">True</span></span><br><span class="line">    t.start()</span><br><span class="line">    worker_threads.append(t)</span><br><span class="line">    index += <span class="number">1</span></span><br><span class="line">docker_spark_start(MASTER[<span class="string">&#x27;IP&#x27;</span>], MASTER[<span class="string">&#x27;password&#x27;</span>], <span class="string">&#x27;MASTER&#x27;</span>,</span><br><span class="line">                   <span class="string">&#x27;docker run -d -p 8088:8088 -p 4040:4040 -p 7077:7077 -p 8080:8080 &#x27;</span></span><br><span class="line">                   <span class="string">&#x27;-p 6066:6066 --name=sparkMaster local/sparkcluster /app/start-master.sh&#x27;</span>)</span><br><span class="line"></span><br><span class="line">event.<span class="built_in">set</span>()</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;[INFO]Deploy spark master finish&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> t <span class="keyword">in</span> worker_threads:</span><br><span class="line">    t.join()</span><br><span class="line">os.remove(<span class="string">&#x27;config.json.tmp&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;[INFO]Deploy spark workers finish&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>docker 安装脚本<code>docker_install.sh</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#! /bin/bash</span></span><br><span class="line"><span class="comment"># docker_install.sh for ubuntu16.04</span></span><br><span class="line">apt update</span><br><span class="line">apt install python3 -y</span><br><span class="line">apt install vim -y</span><br><span class="line">apt install apt-transport-https -y</span><br><span class="line">apt install ca-certificates -y</span><br><span class="line">apt install curl -y</span><br><span class="line">apt install software-properties-common -y</span><br><span class="line">curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -</span><br><span class="line">apt-key fingerprint 0EBFCD88</span><br><span class="line">add-apt-repository <span class="string">&quot;deb [arch=amd64] https://download.docker.com/linux/ubuntu <span class="subst">$(lsb_release -cs)</span> stable&quot;</span></span><br><span class="line">apt update</span><br><span class="line">apt install docker-ce -y</span><br><span class="line">apt install python3 -y</span><br><span class="line">apt install python3-pip -y</span><br><span class="line">pip3 install --upgrade pip</span><br><span class="line">pip3 install oss2</span><br><span class="line">python3 get_docker_image.py</span><br><span class="line">rm config.json</span><br><span class="line">docker stop $(docker ps -a -q)</span><br><span class="line">docker rm $(docker ps -a -q)</span><br><span class="line">docker rmi $(docker images -q)</span><br><span class="line">docker load --input dockerImage.tar</span><br><span class="line">rm dockerImage.tar</span><br><span class="line">rm get_docker_image.py </span><br></pre></td></tr></table></figure>
+<p>镜像获取<code>get_docker_image.py</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> oss2</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;config.json&#x27;</span>, <span class="string">&#x27;r&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    config_data = json.load(f)</span><br><span class="line">OSS_END_POINT = config_data[<span class="string">&#x27;end_point&#x27;</span>]</span><br><span class="line">OSS_BUCKET_NAME = config_data[<span class="string">&#x27;bucket_name&#x27;</span>]</span><br><span class="line">OSS_ACCESS_ID = config_data[<span class="string">&#x27;access_key_id&#x27;</span>]</span><br><span class="line">OSS_ACCESS_SECRET = config_data[<span class="string">&#x27;access_key_secret&#x27;</span>]</span><br><span class="line">OSS_DOCKER_IMAGE_NAME = config_data[<span class="string">&#x27;oss_docker_image_name&#x27;</span>]</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;start get docker image from oss&#x27;</span>)</span><br><span class="line">sys.stdout.flush()</span><br><span class="line">auth = oss2.Auth(OSS_ACCESS_ID, OSS_ACCESS_SECRET)</span><br><span class="line">bucket = oss2.Bucket(auth, OSS_END_POINT, OSS_BUCKET_NAME)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">percentage</span>(<span class="params">consumed_bytes, total_bytes</span>):</span></span><br><span class="line">    <span class="keyword">if</span> total_bytes:</span><br><span class="line">        rate = <span class="built_in">int</span>(<span class="number">100</span> * (<span class="built_in">float</span>(consumed_bytes) / <span class="built_in">float</span>(total_bytes)))</span><br><span class="line">        <span class="keyword">if</span> percentage.last_rate != rate:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;&#123;0&#125;% -- &#123;1:.1f&#125;mb/&#123;2:.1f&#125;mb&#x27;</span>.<span class="built_in">format</span>(rate, consumed_bytes/<span class="number">1024</span>/<span class="number">1024</span>, total_bytes/<span class="number">1024</span>/<span class="number">1024</span>))</span><br><span class="line">            sys.stdout.flush()</span><br><span class="line">            percentage.last_rate = rate</span><br><span class="line"></span><br><span class="line">percentage.last_rate = <span class="number">0</span></span><br><span class="line">bucket.get_object_to_file(OSS_DOCKER_IMAGE_NAME, <span class="string">&#x27;dockerImage.tar&#x27;</span>, progress_callback=percentage)</span><br></pre></td></tr></table></figure>
+<h2 id="总结">总结</h2>
+<p>回头想想，似乎 docker 的使用也没有那么必要。只是装了一层皮，相对的部署环境会更加统一和无脑。唯一的麻烦就是为了保证最新版本，过段时间就要更新一下那个 spark 的 docker 镜像，同时 <code>docker_install.sh</code>脚本因为涉及到<code>apt install</code>命令，其实也需要常常查看有什么幺蛾子。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Docker/" rel="tag"># Docker</a>
+              <a href="/tags/Spark/" rel="tag"># Spark</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/04/13/blog-rebuild/" rel="prev" title="Hexo博客改造记">
+                  <i class="fa fa-chevron-left"></i> Hexo博客改造记
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/07/12/linux-login/" rel="next" title="服务器登录管理">
+                  服务器登录管理 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"604e5df8ad4eefc8c3250eba8069e86e"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

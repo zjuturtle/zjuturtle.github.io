@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="今年穷，租不起服务器了，所以只能把博客整体搬到 Github 上。另外之前用的网易云跟贴也跪了（我真是用一家倒一家）。本来是打算用 Gitment 不过作者似乎弃坑了。所以现在用 Gitalk 替代评论系统。Next 主题下目前（截止 2017.11.20）已经有 Gitalk 的 Pull request，不过似乎还是有各种 bug (我试过了)。估计过段时间就会接入正式版本吧。在这之前还是得自">
+<meta property="og:type" content="article">
+<meta property="og:title" content="博客平台更换">
+<meta property="og:url" content="https://zjuturtle.com/2017/11/20/blog-update-again/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="今年穷，租不起服务器了，所以只能把博客整体搬到 Github 上。另外之前用的网易云跟贴也跪了（我真是用一家倒一家）。本来是打算用 Gitment 不过作者似乎弃坑了。所以现在用 Gitalk 替代评论系统。Next 主题下目前（截止 2017.11.20）已经有 Gitalk 的 Pull request，不过似乎还是有各种 bug (我试过了)。估计过段时间就会接入正式版本吧。在这之前还是得自">
+<meta property="og:locale">
+<meta property="og:image" content="https://zjuturtle.com/2017/11/20/blog-update-again/cloudflare_dns.jpg">
+<meta property="article:published_time" content="2017-11-20T15:26:59.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.632Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="Hexo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zjuturtle.com/2017/11/20/blog-update-again/cloudflare_dns.jpg">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2017/11/20/blog-update-again/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2017/11/20/blog-update-again/","path":"2017/11/20/blog-update-again/","title":"博客平台更换"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>博客平台更换 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#gitalk-%E9%85%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">Gitalk 配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%B3%E8%AF%B7-github-%E7%9A%84-application"><span class="nav-number">1.1.</span> <span class="nav-text">申请 Github 的 Application</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#next-%E4%B8%BB%E9%A2%98%E4%BF%AE%E6%94%B9"><span class="nav-number">1.2.</span> <span class="nav-text">Next 主题修改</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#layout_third-partycommentsgitalk.swig-%E6%96%87%E4%BB%B6"><span class="nav-number">1.3.</span> <span class="nav-text">layout&#x2F;_third-party&#x2F;comments&#x2F;gitalk.swig 文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#layout_third-partycommentsindex.swig-%E6%96%87%E4%BB%B6"><span class="nav-number">1.4.</span> <span class="nav-text">layout&#x2F;_third-party&#x2F;comments&#x2F;index.swig 文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#layout_partialscomments.swig-%E6%96%87%E4%BB%B6"><span class="nav-number">1.5.</span> <span class="nav-text">layout&#x2F;_partials&#x2F;comments.swig 文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#config.yml-%E6%96%87%E4%BB%B6"><span class="nav-number">1.6.</span> <span class="nav-text">_config.yml 文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ssl-%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">SSL 实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E5%9F%BA%E6%9C%AC%E7%9A%84%E4%BF%AE%E6%94%B9"><span class="nav-number">2.1.</span> <span class="nav-text">一些基本的修改</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cloudfare-%E8%AE%BE%E7%BD%AE%E6%AD%A5%E9%AA%A4"><span class="nav-number">2.2.</span> <span class="nav-text">Cloudfare 设置步骤</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2017/11/20/blog-update-again/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          博客平台更换
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2017-11-20 23:26:59" itemprop="dateCreated datePublished" datetime="2017-11-20T23:26:59+08:00">2017-11-20</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/TechChatter/" itemprop="url" rel="index"><span itemprop="name">TechChatter</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>今年穷，租不起服务器了，所以只能把博客整体搬到 Github 上。另外之前用的网易云跟贴也跪了（我真是用一家倒一家）。本来是打算用 <a target="_blank" rel="noopener" href="https://imsun.github.io/gitment/">Gitment</a> 不过作者似乎弃坑了。所以现在用 <a target="_blank" rel="noopener" href="https://gitalk.github.io/">Gitalk</a> 替代评论系统。Next 主题下目前（截止 2017.11.20）已经有 Gitalk 的 <a target="_blank" rel="noopener" href="https://github.com/iissnan/hexo-theme-next/pull/1814">Pull request</a>，不过似乎还是有各种 bug (我试过了)。估计过段时间就会接入正式版本吧。在这之前还是得自己动手。讲道理应该说的详细一点，不过 Hexo 部署到 github pages 上的教程网上多如牛毛，就不在废话了（其实是当初搞的时候忘记了记下来了现在懒得回去弄了）</p>
+<span id="more"></span>
+<h2 id="gitalk-配置">Gitalk 配置</h2>
+<p>我是根据这个<a target="_blank" rel="noopener" href="http://www.whtis.com/2017/10/19/%E7%BB%99hexo%E5%8D%9A%E5%AE%A2nexT%E4%B8%BB%E9%A2%98%E6%B7%BB%E5%8A%A0Gitalk%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/">博客</a>来手动配置的。</p>
+<h3 id="申请-github-的-application">申请 Github 的 Application</h3>
+<p>如果没有申请的话，可以直接<a target="_blank" rel="noopener" href="https://github.com/settings/applications/new">点这里</a>申请。注意填写信息时的 <code>Authorization callback URL</code> 这一项需要填正确的博客地址（比如我填的是 <code>https://zjuturtle.com</code>）。</p>
+<p>在申请后，要记下 <code>Client ID</code> 和 <code>Client Secret</code> 两个信息，后面会用到。</p>
+<h3 id="next-主题修改">Next 主题修改</h3>
+<p>我们需要修改 Next 主题下的 4 个文件</p>
+<ul>
+<li><code>layout/_third-party/comments/gitalk.swig</code></li>
+<li><code>layout/_third-party/comments/index.swig</code></li>
+<li><code>layout/_partials/comments.swig</code></li>
+<li><code>_config.yml</code></li>
+</ul>
+<p>注意原博客的变量名有点问题，这里做了一点基本的修改。</p>
+<hr />
+<h3 id="layout_third-partycommentsgitalk.swig-文件"><code>layout/_third-party/comments/gitalk.swig</code> 文件</h3>
+<p>直接新建一个名为 <code>gitalk.swig</code> 的文件，并填入以下内容</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">&#123;% if not (theme.duoshuo and theme.duoshuo.shortname) and not theme.duoshuo_shortname %&#125;</span><br><span class="line">&#123;% if theme.gitalk.enable and theme.gitalk.client_id %&#125;</span><br><span class="line"><span class="comment">&lt;!-- LOCAL: You can save these files to your site and update links --&gt;</span></span><br><span class="line">  &#123;% set CommentsClass = &quot;Gitalk&quot; %&#125;</span><br><span class="line">  <span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;stylesheet&quot;</span> <span class="attr">href</span>=<span class="string">&quot;https://unpkg.com/gitalk/dist/gitalk.css&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://unpkg.com/gitalk/dist/gitalk.min.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- END LOCAL --&gt;</span></span><br><span class="line">    &#123;% if page.comments %&#125;</span><br><span class="line">      <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">&quot;text/javascript&quot;</span>&gt;</span><span class="handlebars"><span class="xml"></span></span></span><br><span class="line"><span class="xml"><span class="handlebars">      function renderGitalk()&#123;</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">        var gitalk = new </span><span class="template-variable">&#123;&#123;<span class="name">CommentsClass</span>&#125;&#125;</span><span class="xml">(&#123;</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">            owner: &#x27;</span><span class="template-variable">&#123;&#123; <span class="name">theme.gitalk.owner</span> &#125;&#125;</span><span class="xml">&#x27;,</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">            repo: &#x27;</span><span class="template-variable">&#123;&#123; <span class="name">theme.gitalk.repo</span> &#125;&#125;</span><span class="xml">&#x27;,</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">            clientID: &#x27;</span><span class="template-variable">&#123;&#123; <span class="name">theme.gitalk.client_id</span> &#125;&#125;</span><span class="xml">&#x27;,</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">            clientSecret: &#x27;</span><span class="template-variable">&#123;&#123; <span class="name">theme.gitalk.client_secret</span> &#125;&#125;</span><span class="xml">&#x27;,</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">            admin: &#x27;</span><span class="template-variable">&#123;&#123; <span class="name">theme.gitalk.admin</span> &#125;&#125;</span><span class="xml">&#x27;,</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">            &#123;% if theme.gitalk.distraction_free_mode %&#125;</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">              distractionFreeMode: &#x27;</span><span class="template-variable">&#123;&#123; <span class="name">theme.gitalk.distraction_free_mode</span> &#125;&#125;</span><span class="xml">&#x27;</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">            &#123;% endif %&#125;</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">            &#125;);</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">        gitalk.render(&#x27;gitalk-container&#x27;);</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">      &#125;</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">      renderGitalk();</span></span></span><br><span class="line"><span class="xml"><span class="handlebars">      </span></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    &#123;% endif %&#125;</span><br><span class="line">&#123;% endif %&#125;</span><br><span class="line">&#123;% endif %&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h3 id="layout_third-partycommentsindex.swig-文件"><code>layout/_third-party/comments/index.swig</code> 文件</h3>
+<p>在该文件加入一行代码</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;% include &#x27;gitalk.swig&#x27; %&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h3 id="layout_partialscomments.swig-文件"><code>layout/_partials/comments.swig</code> 文件</h3>
+<p>在差不多文件末尾的地方加上</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;% elseif theme.gitalk.enable %&#125;</span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;comments&quot;</span> <span class="attr">id</span>=<span class="string">&quot;comments&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;gitalk-container&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<hr />
+<h3 id="config.yml-文件"><code>_config.yml</code> 文件</h3>
+<p>在这个文件加入以下设置项，并填入相关信息。</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Gitalk</span></span><br><span class="line"><span class="comment"># more info please open https://github.com/gitalk/gitalk</span></span><br><span class="line"><span class="attr">gitalk:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">client_id:</span> <span class="comment"># your github application id</span></span><br><span class="line">  <span class="attr">client_secret:</span> <span class="comment"># your github application secret</span></span><br><span class="line">  <span class="attr">repo:</span>  <span class="comment"># your repo. Such as zjuturtle.github.io</span></span><br><span class="line">  <span class="attr">owner:</span> <span class="comment"># your github username. Such as zjuturtle</span></span><br><span class="line">  <span class="attr">admin:</span> <span class="comment"># People(github username) who have write permission to blog repo. Use commas to separate. </span></span><br><span class="line">  <span class="attr">distraction_free_mode:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<p><strong>Tips:如果出现 '未找到相关的 Issues 进行评论' 的字样，则登陆 GitHub 授权即可</strong></p>
+<h2 id="ssl-实现">SSL 实现</h2>
+<p>因为博客托管在 Github 上，所以在实现 SSL 上有点麻烦（毕竟不能直接）。我借助的是 <a target="_blank" rel="noopener" href="https://www.cloudflare.com/">cloudflare</a> 曲线救国的方式来实现的，虽然严格来说不能算是全链路 https，但起码不会被无良运营商夹带私货。</p>
+<h3 id="一些基本的修改">一些基本的修改</h3>
+<p>最好是能先修改 Hexo 博客的部署方式。在站点目录下的 <code>_config.yml</code> 文件里修改如下内容</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repo:</span> <span class="string">https://github.com/[username]/[username].github.io.git</span></span><br><span class="line">  <span class="attr">branch:</span> <span class="string">master</span></span><br></pre></td></tr></table></figure>
+<p>然后把博客的源代码切换至其他分支（我用的是source）。这样每一次的部署只要运行以下命令就可以了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo generate</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+<h3 id="cloudfare-设置步骤">Cloudfare 设置步骤</h3>
+<p>设置步骤基本参照了<a target="_blank" rel="noopener" href="https://g2ex.github.io/2015/10/14/Hexo-with-SSL-Hosted-on-Github-Page/">这个博客</a>。</p>
+<p>我们要做以下几步工作</p>
+<ol type="1">
+<li>注册 <a target="_blank" rel="noopener" href="https://www.cloudflare.com"><code>Cloudflare</code></a>，添加个人网站</li>
+<li>获取 <code>Cloudflare</code> 的 <code>Domain Name Server</code></li>
+<li>在域名提供商处修改自己域名的 <code>Domain Name Server</code> 为 2 所获取的 DNS</li>
+<li>在 CloudFlare 的 Crypto 中开启 SSL 加密，选择 <code>flexible</code> (似乎 <code>full</code> 也可以？)</li>
+<li>在 CloudFlare 的 Crypto 中设置 Always use HTTPS</li>
+<li>在 GitHub 仓库设置中设置自定义域名</li>
+</ol>
+<p>在 Cloudflare 的 Crypto 上我用的是 <code>Full</code> 模式。而在 DNS 界面上，我的信息是这样的</p>
+<img src="/2017/11/20/blog-update-again/cloudflare_dns.jpg" class="">
+<p>大体思路就这样，当初没有具体详细的记录每一步，现在懒得回去再弄了。。。实际上 Cloudflare 上还有很多设置可以玩，大家可以自行研究下。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Hexo/" rel="tag"># Hexo</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/11/10/fuck-the-world/" rel="prev" title="写于人生操蛋处">
+                  <i class="fa fa-chevron-left"></i> 写于人生操蛋处
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/11/22/docker-network/" rel="next" title="Docker 网络详解">
+                  Docker 网络详解 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"adc2970d2606328a416502129bcfa29d"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

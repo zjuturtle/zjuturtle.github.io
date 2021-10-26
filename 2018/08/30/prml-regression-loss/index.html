@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="这篇记录了一下回归损失函数的推导过程，主要是 PRML 的式 1.88 和式 1.90。我在 Google 上搜了过 1.88 的推导。有一些中文博客的推导，不过写的什么 J8 玩意，看着推导的时候被带到沟里去了。最后找了 stackexchange 以及这里 stackexchange 才算得到完美解答。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PRML笔记 - 回归损失函数">
+<meta property="og:url" content="https://zjuturtle.com/2018/08/30/prml-regression-loss/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="这篇记录了一下回归损失函数的推导过程，主要是 PRML 的式 1.88 和式 1.90。我在 Google 上搜了过 1.88 的推导。有一些中文博客的推导，不过写的什么 J8 玩意，看着推导的时候被带到沟里去了。最后找了 stackexchange 以及这里 stackexchange 才算得到完美解答。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-08-30T03:21:14.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.649Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="PRML">
+<meta property="article:tag" content="regression">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2018/08/30/prml-regression-loss/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2018/08/30/prml-regression-loss/","path":"2018/08/30/prml-regression-loss/","title":"PRML笔记 - 回归损失函数"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>PRML笔记 - 回归损失函数 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9E%E5%BD%92%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="nav-number">1.</span> <span class="nav-text">回归损失函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%8F-1.88-%E6%8E%A8%E5%AF%BC"><span class="nav-number">2.</span> <span class="nav-text">式 1.88 推导</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%8F-1.90-%E6%8E%A8%E5%AF%BC"><span class="nav-number">3.</span> <span class="nav-text">式 1.90 推导</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2018/08/30/prml-regression-loss/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PRML笔记 - 回归损失函数
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-08-30 11:21:14" itemprop="dateCreated datePublished" datetime="2018-08-30T11:21:14+08:00">2018-08-30</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>这篇记录了一下回归损失函数的推导过程，主要是 PRML 的式 1.88 和式 1.90。我在 Google 上搜了过 1.88 的推导。有一些中文博客的推导，不过写的什么 J8 玩意，看着推导的时候被带到沟里去了。最后找了 <a target="_blank" rel="noopener" href="https://math.stackexchange.com/questions/2130282/bishop-ml-and-pattern-recognition-calculus-of-variations-linear-regression-loss">stackexchange</a> 以及这里 <a target="_blank" rel="noopener" href="https://stats.stackexchange.com/questions/228561/loss-functions-for-regression-proof">stackexchange</a> 才算得到完美解答。</p>
+<span id="more"></span>
+<h2 id="回归损失函数">回归损失函数</h2>
+<p>我们首先给出回归损失函数的定义 <span class="math inline">\(L(t,y(x))\)</span> 。其中 <span class="math inline">\(x\)</span> 是输入，<span class="math inline">\(y(x)\)</span> 是对 <span class="math inline">\(t\)</span> 的具体估计。<span class="math inline">\(t\)</span> 可以认为是真值。函数 <span class="math inline">\(L\)</span> 可以理解为损失函数，或者是惩罚函数。那么平均损失（或者说期望损失）就是</p>
+<p><span class="math display">\[E[L]=\int\int L(t,y(x))p(x,t)dx\ dt\]</span></p>
+<p>我们考虑最常见的平方损失函数，定义为 <span class="math inline">\(L(t,y(x))=\{y(x)-t\}^2\)</span>，那么上式就可以写为</p>
+<p><span class="math display">\[E[L]= \int \int \{y(x)-t\}^2p(x,t)dx\ dt\]</span></p>
+<p>关键点来了，在 PRML 的原书上只说了变分法就得到了</p>
+<p><span class="math display">\[\frac{\delta E[L]}{\delta y(x)}=2 \int\{y(x)-t\}p(x,t)\ dt=0\]</span></p>
+<p>我第一次看到反正是一脸懵逼。</p>
+<h2 id="式-1.88-推导">式 1.88 推导</h2>
+<p>首先我们可以把式子改写如下</p>
+<p><span class="math display">\[\begin{split}&amp;\int\int[y(x)-t]^2p(x,t)dx\ dt \\
+=&amp;\int G(y(x),y&#39;(x),x)dx\end{split}\]</span></p>
+<p><span class="math display">\[G(y,y&#39;,x)=\int[y-t]^2p(x,t)dt\]</span></p>
+<p>好了，根据变分法我们有</p>
+<p><span class="math display">\[ \frac{\partial G}{\partial y}-\frac {d}{dx}\left( \frac{\partial G}{\partial y&#39;}\right)=0\]</span></p>
+<p>因为在 <span class="math inline">\(G(y,y&#39;,x)\)</span> 中没有 <span class="math inline">\(y&#39;\)</span> 的项，所以有</p>
+<p><span class="math display">\[\frac{\partial G}{\partial y}= \int2[y-t]p(x,t)dt\]</span></p>
+<p>将式子变形一下，我们有</p>
+<p><span class="math display">\[y(x)=\frac{\int tp(x,t)\ dt}{p(x)}=E_t[t|x]\]</span></p>
+<p>这样我们就得到了 <span class="math inline">\(x\)</span> 条件下 <span class="math inline">\(t\)</span> 的均值，被称为回归函数。</p>
+<h2 id="式-1.90-推导">式 1.90 推导</h2>
+<p>紧接着就是一个可以把损失函数分解为两部分的公式 1.90。这个公式会在后面用于偏置方差分解。</p>
+<p>我们先搞个引理如下</p>
+<p><span class="math display">\[\begin{split} E_{x,t}[g(x,t)]&amp;=\int_x \int_t g(x,t)p(x,t)dx\ dt \\
+&amp;=\int_x\int_tg(x,t)p(x)p(t|x)dx\ dt \\
+&amp;=\int_xp(x)\int_tg(x,t)p(t|x)dt \ dx \\
+&amp;=\int_xE_t[g(x,t)|x]p(x)dx \\
+&amp;=E_x[E_t[g(x,t)|x]]\end{split}\]</span></p>
+<p>对于 <span class="math inline">\(\{y(x)-t\}^2\)</span>，我们可以做如下变化</p>
+<p><span class="math display">\[\begin{split}\{y(x)-t\}^2&amp;=\{y(x)-E_t[t|x]+E_t[t|x]-t\}^2
+\\ &amp;=\{y(x)-E_t[t|x]\}^2+2\{y(x)-E_t[t|x]\}\{E_t[t|x]-t\}+\{E_t[t|x]-t\}^2 \\
+&amp;=L_1+2L_2+L_3\end{split}\]</span></p>
+<p>根据引理，我们有</p>
+<p><span class="math display">\[E_{x,t}[L]=E_{x,t}[L_1]+2E_{x,t}[L_2]+E_{x,t}[L_3]\]</span></p>
+<p>然后分别计算三项</p>
+<p><span class="math display">\[\begin{split}E_{x,t}[L_1]&amp;=E_{x,t}[(y(x)-E_t[t|x])^2] \\
+&amp;=E_x[(y(x)-E_t[t|x])^2] \end{split}\]</span></p>
+<p><span class="math display">\[\begin{split}E_{x,t}[L_2]&amp;=E_{x,t}[(y(x)-E_t[t|x])(E_t[t|x]-t)] \\
+&amp;=E_x[ E_t[\{(y(x)-E_t[t|x])(E_t[t|x]-t)\}]|x] \\
+&amp;=E_x[(y(x)-E_t[t|x])E_t[(E_t[t|x]-t)|x]]\end{split}\]</span></p>
+<p>注意到 <span class="math inline">\(E_t[(E_t[t|x]-t)|x]=E_t[t|x]-E_t[t|x]=0\)</span>，所以 <span class="math inline">\(E_t[L_2]=0\)</span>。</p>
+<p><span class="math display">\[\begin{split}E_{x,t}[L_3]&amp;=E_{x,t}[(E_t[t|x]-t)^2] \\
+&amp;=E_x[E_t[(E_t[t|x]-t)^2|x]] \\
+&amp;=E_x[var_t[t|x]]\end{split}\]</span></p>
+<p>所以（这里原版的英文书是有问题的）</p>
+<p><span class="math display">\[E_{x,t}[L]=\int_x(y(x)-E_t[t|x])^2p(x)dx+\int_xvar_t[t|x]dx\]</span></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/PRML/" rel="tag"># PRML</a>
+              <a href="/tags/regression/" rel="tag"># regression</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/08/16/prml-bayes-gaussian/" rel="prev" title="PRML笔记 - 高斯分布的贝叶斯共轭先验">
+                  <i class="fa fa-chevron-left"></i> PRML笔记 - 高斯分布的贝叶斯共轭先验
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/09/30/prml-linear-regression/" rel="next" title="PRML笔记 - 线性回归">
+                  PRML笔记 - 线性回归 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"d0d508163312a39204ce8a9283662b0f"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

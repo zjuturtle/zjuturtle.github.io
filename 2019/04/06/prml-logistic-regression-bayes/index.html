@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="实际上对于 Logistic Regression 也是可以应用贝叶斯方法的。但直接应用非常困难。因为在贝叶斯框架下计算后验概率，我们需要对其做归一化的操作。而在 Logistic Regression 中，假设我们有 N 个数据点，那么在似然函数中就会有 N 个 sigmoid 函数连乘。这在归一化时会很麻烦，基本告别解析计算。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PRML笔记 - Logistic Regression 的贝叶斯方法">
+<meta property="og:url" content="https://zjuturtle.com/2019/04/06/prml-logistic-regression-bayes/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="实际上对于 Logistic Regression 也是可以应用贝叶斯方法的。但直接应用非常困难。因为在贝叶斯框架下计算后验概率，我们需要对其做归一化的操作。而在 Logistic Regression 中，假设我们有 N 个数据点，那么在似然函数中就会有 N 个 sigmoid 函数连乘。这在归一化时会很麻烦，基本告别解析计算。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2019-04-05T16:14:20.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.649Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="PRML">
+<meta property="article:tag" content="Bayes">
+<meta property="article:tag" content="Logistic Regression">
+<meta property="article:tag" content="贝叶斯方法">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2019/04/06/prml-logistic-regression-bayes/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2019/04/06/prml-logistic-regression-bayes/","path":"2019/04/06/prml-logistic-regression-bayes/","title":"PRML笔记 - Logistic Regression 的贝叶斯方法"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>PRML笔记 - Logistic Regression 的贝叶斯方法 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8E%E9%AA%8C%E5%88%86%E5%B8%83"><span class="nav-number">1.</span> <span class="nav-text">后验分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E6%B5%8B%E5%88%86%E5%B8%83"><span class="nav-number">2.</span> <span class="nav-text">预测分布</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2019/04/06/prml-logistic-regression-bayes/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PRML笔记 - Logistic Regression 的贝叶斯方法
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-04-06 00:14:20" itemprop="dateCreated datePublished" datetime="2019-04-06T00:14:20+08:00">2019-04-06</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>实际上对于 Logistic Regression 也是可以应用贝叶斯方法的。但直接应用非常困难。因为在贝叶斯框架下计算后验概率，我们需要对其做归一化的操作。而在 Logistic Regression 中，假设我们有 N 个数据点，那么在似然函数中就会有 N 个 sigmoid 函数连乘。这在归一化时会很麻烦，基本告别解析计算。</p>
+<span id="more"></span>
+<h2 id="后验分布">后验分布</h2>
+<p>因此，我们在 Logistic Regression 中使用贝叶斯框架时会使用一定的近似，这里以之前阐述的 Laplace Approximation 为例。首先我们有参数 <span class="math inline">\(\mathbf{w}\)</span> 的高斯先验分布</p>
+<p><span class="math display">\[p(\mathbf{w})=N(\mathbf{w}|\mathbf{m_0},\mathbf{S_0})\]</span></p>
+<p>我们可以写出后验分布如下</p>
+<p><span class="math display">\[p(\mathbf{w}|\mathbf{t}) \propto p(\mathbf{w})p(\mathbf{t}|\mathbf{w})\]</span></p>
+<p>其中，<span class="math inline">\(\mathbf{t}=(t_1,...,t_N)^T\)</span>，即是训练数据的0-1正确标签，<span class="math inline">\(p(\mathbf{t}|\mathbf{w})=\prod_{n=1}^Ny_n^{t_n}(1-y_n)^{1-t_n}\)</span> 为似然函数，<span class="math inline">\(y_n=\sigma(\mathbf{w}^T\phi_n)\)</span>。那么两边取对数有</p>
+<p><span class="math display">\[\ln p(\mathbf{w}|\mathbf{t})=-\frac12(\mathbf{w}-\mathbf{m_0})^T\mathbf{S_0}^{-1}(\mathbf{w}-\mathbf{m_0})+\sum_{n=1}^{N}\left[t_n \ln y_n+(1-t_n)\ln(1-y_n) \right]+const\]</span></p>
+<p>对 <span class="math inline">\(p(\mathbf{w}|\mathbf{t})\)</span> 使用 Laplace Approximation。首先我们对 <span class="math inline">\(p(\mathbf{w}|\mathbf{t})\)</span> 使用极大似然法，取其梯度为 0 的地方得到 <span class="math inline">\(\mathbf{w_{MAP}}\)</span>，作为 Laplace Approximation 的均值。同时根据公式我们可以得到 Laplace Approximation 的方差为</p>
+<p><span class="math display">\[\mathbf{S_N}=-\nabla \nabla \ln p(\mathbf{w}|\mathbf{t})=\mathbf{S_0}^{-1}+\sum_{n=1}^Ny_n(1-y_n)\phi_n\phi_n^T\]</span></p>
+<p>所以使用 Laplace Approximation 近似得到的结果为</p>
+<p><span class="math display">\[p(\mathbf{w}|\mathbf{t}) \approx q(\mathbf{w})=\mathcal{N}(\mathbf{w}|\mathbf{w_{MAP}},\mathbf{S_N})\]</span></p>
+<h2 id="预测分布">预测分布</h2>
+<p>当然我们仅有 <span class="math inline">\(q(\mathbf{w})\)</span> 是不够的，我们更感兴趣的是类别的预测分布。给定一个特征向量 <span class="math inline">\(\phi(x)\)</span>，它的预测分布如下</p>
+<p><span class="math display">\[p(C_1|\phi, \mathbf{t})=\int p(C_1|\phi,w)p(w|\mathbf{t}) \mathrm{d} \mathbf{w} \approx \int \sigma(\mathbf{w}^T \phi)q(\mathbf{w})\ \mathrm{d} \mathbf{w}\]</span></p>
+<p>对于二分类问题， <span class="math inline">\(p(C_2|\phi, \mathbf{t})=1- p(C_1|\phi, \mathbf{t})\)</span>。为了计算预测分布，我们首先注意到函数 <span class="math inline">\(\sigma(\mathbf{w}^T\phi)\)</span> 对于 <span class="math inline">\(\mathbf{w}\)</span> 的依赖只通过它在 <span class="math inline">\(\phi\)</span> 上的投影实现。为了简便，我们记 <span class="math inline">\(a=\mathbf{w}^T \phi\)</span>，然后改写如下</p>
+<p><span class="math display">\[\sigma(\mathbf{w}^T \phi)=\int \delta(a-\mathbf{w}^T\phi)\sigma(a)\ \mathrm{d}a \]</span></p>
+<p>我们记<span class="math inline">\(\delta(.)\)</span> 为 delta 函数，即只在 0 处为非零值，且在整个实数域上的积分为1。对于 <span class="math inline">\(p(a)\)</span> ，我们可以认为 delta 函数给 <span class="math inline">\(\mathbf{w}\)</span> 施加了一个线性限制，因此在所有与 <span class="math inline">\(\phi\)</span> 正交的方向上积分，就得到了联合概率分布 <span class="math inline">\(q(\mathbf{w})\)</span> 的边缘分布。（没理解Orz）</p>
+<p><span class="math display">\[p(a)=\int \delta(a-\mathbf{w}^T \phi)q(\mathbf{w})\ \mathrm{d}\mathbf{w}\]</span></p>
+<p>则有</p>
+<p><span class="math display">\[\int\sigma(\mathbf{w}^T\phi)q(\mathbf{w})\mathrm{d}\mathbf{w}=\int\sigma(a)p(a)\ \mathrm{d}a\]</span></p>
+<p>显然（显然个屁，不懂） <span class="math inline">\(a\)</span> 也是满足高斯分布的，我们有</p>
+<p><span class="math display">\[ \mu_a=\int p(a)a\ \mathrm{d}a=\int q(\mathbf{w}) \mathbf{w}^T \phi\ \mathrm{d} \mathbf{w}= \mathbf{w}^T_{MAP}\phi \]</span></p>
+<p><span class="math display">\[\begin{aligned} \sigma_a^2&amp;=\mathrm{var}[a]=\int p(a)\{a^2-\mu_a^2\}\ \mathrm{d}a \\
+&amp;= \phi^T  \mathbf{S_N}\phi\end{aligned}\]</span></p>
+<p>所以最后就是</p>
+<p><span class="math display">\[p(C_1|\mathbf{t})=\int \sigma(a) p(a)\ \mathrm{d}a=\int\sigma(a)\mathcal{N}(a|\mu_a,\sigma_a^2)\ \mathrm{d}a\]</span></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/PRML/" rel="tag"># PRML</a>
+              <a href="/tags/Bayes/" rel="tag"># Bayes</a>
+              <a href="/tags/Logistic-Regression/" rel="tag"># Logistic Regression</a>
+              <a href="/tags/%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%96%B9%E6%B3%95/" rel="tag"># 贝叶斯方法</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/04/06/prml-laplace-approximation/" rel="prev" title="PRML笔记 - Laplace Approximation">
+                  <i class="fa fa-chevron-left"></i> PRML笔记 - Laplace Approximation
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/04/29/clion-docker/" rel="next" title="使用 Clion 调试 Docker 内的 C++ 代码">
+                  使用 Clion 调试 Docker 内的 C++ 代码 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"9c78a9b38554f8baccf8615a9acf5e0d"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

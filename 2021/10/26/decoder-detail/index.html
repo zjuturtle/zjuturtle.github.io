@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="解码本质上是使用声学模型 \(p(O,S|W)\) 和语言模型 \(P(W)\) 在搜索空间里寻找最可能的词序列 \(\hat{W}\)。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ASR解码器详解">
+<meta property="og:url" content="https://zjuturtle.com/2021/10/26/decoder-detail/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="解码本质上是使用声学模型 \(p(O,S|W)\) 和语言模型 \(P(W)\) 在搜索空间里寻找最可能的词序列 \(\hat{W}\)。">
+<meta property="og:locale">
+<meta property="og:image" content="https://zjuturtle.com/2021/10/26/decoder-detail/decoder.png">
+<meta property="article:published_time" content="2021-10-26T13:15:41.000Z">
+<meta property="article:modified_time" content="2021-10-26T13:18:16.782Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="Algorithm">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="decoder">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zjuturtle.com/2021/10/26/decoder-detail/decoder.png">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2021/10/26/decoder-detail/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2021/10/26/decoder-detail/","path":"2021/10/26/decoder-detail/","title":"ASR解码器详解"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>ASR解码器详解 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2021/10/26/decoder-detail/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ASR解码器详解
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2021-10-26 21:15:41 / Modified: 21:18:16" itemprop="dateCreated datePublished" datetime="2021-10-26T21:15:41+08:00">2021-10-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>解码本质上是使用声学模型 <span class="math inline">\(p(O,S|W)\)</span> 和语言模型 <span class="math inline">\(P(W)\)</span> 在搜索空间里寻找最可能的词序列 <span class="math inline">\(\hat{W}\)</span>。</p>
+<span id="more"></span>
+<p>假设句子 <span class="math inline">\(W\)</span> 由 <span class="math inline">\(M_W\)</span> 个词组成，<span class="math inline">\(W=w_1...w_{M_W}\)</span>。那么</p>
+<p><span class="math display">\[\begin{aligned} \hat{W} &amp;= \underset{W \in W_{all}}{\arg max} \Big\{ \sum_{S \in S_W}p(O,S|W)P(W) \Big\} \\
+&amp;=\underset{W \in W_{all}}{\arg max} \Big\{ \sum_{S \in S_W} \prod_{m=1}^{M_W}p(o^{t_m}_{t_{m-1}+1},s^{t_m}_{t_{m-1}+1}|w_m)P(w_m|w_1^{m-1})  \Big\} \\
+&amp;=\underset{W \in W_{all}}{\arg max} \Big\{ \sum_{T \in T_W} \prod_{m=1}^{M_W}\hat{p}(o^{t_m}_{t_{m-1}+1}|w_m)P(w_m|w_1^{m-1})  \Big\}
+\end{aligned}\]</span></p>
+<p><span class="math inline">\(W_{all}\)</span> 为所有的合法词序列</p>
+<p><span class="math inline">\(S_W\)</span> 表示词序列 <span class="math inline">\(W\)</span> 可以对应的所有合法状态序列。</p>
+<p><span class="math inline">\(p(o_a^b,s_a^b|w)\)</span> 表示词 <span class="math inline">\(w\)</span> 沿着状态序列 <span class="math inline">\(s_a,...,s_b\)</span> 生成语音片段 <span class="math inline">\(o_a,...,o_b\)</span> 的概率。</p>
+<p><span class="math inline">\(t_{m-1}+1\)</span> 为词 <span class="math inline">\(w_m\)</span> 对应的观察的第一帧下标， <span class="math inline">\(t_m\)</span> 为词 <span class="math inline">\(w_m\)</span> 对应的观察的最后一帧下标，即 <span class="math inline">\(t_{m-1}+1,...,t_m\)</span> 是 <span class="math inline">\(w_m\)</span> 对应 <span class="math inline">\(w_m\)</span> 观察序列。</p>
+<p><span class="math inline">\(T_W\)</span> 代表词序列 <span class="math inline">\(W\)</span> 所有可能的结束帧的序列（间接表示了一种对齐方式），即 <span class="math inline">\(T \in T_W\)</span> 是一个时间序列 <span class="math inline">\(t_1,...,t_{M_W}\)</span>，表示了词序列 <span class="math inline">\(w_1,...,w_{M_W}\)</span> 每个词最后一帧的时间。</p>
+<p>在这里我们将整个模型转换为可以用 Viterbi 算法求解的 HMM 最佳状态序列的问题。这个 HMM 大约有 <span class="math inline">\(|\overline{S}| |Q|\)</span> 个状态。<span class="math inline">\(|\overline{S}|\)</span> 为每个词 HMM 平均状态数，|Q| 为 FSQ 状态数（有限状态文法，表示语言模型）。可以认为 FSG 里每个状态就是一个词，状态之间的边表示可以从一个词跳转到另外一个词，把每个状态展开成这个词对应的 HMM，就得到了大的 HMM。一个例子如下</p>
+<img src="/2021/10/26/decoder-detail/decoder.png" class="">
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+              <a href="/tags/ASR/" rel="tag"># ASR</a>
+              <a href="/tags/decoder/" rel="tag"># decoder</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/10/26/vscode-remote/" rel="prev" title="使用 VSCode 调试远程服务器内的 docker">
+                  <i class="fa fa-chevron-left"></i> 使用 VSCode 调试远程服务器内的 docker
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"83a1231586e689f7c6e522e94e934314"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

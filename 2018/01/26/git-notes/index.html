@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="说起来惭愧，虽然 git 用了好几年，但大部分都停留在基本的 commit 和 push 上，最多也就涉及到一些 merge。稍微骚一些的操作就需要查资料了。虽然有点水，不过还是记录一下 git 中一些稍微骚一些的操作。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="git 大起底">
+<meta property="og:url" content="https://zjuturtle.com/2018/01/26/git-notes/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="说起来惭愧，虽然 git 用了好几年，但大部分都停留在基本的 commit 和 push 上，最多也就涉及到一些 merge。稍微骚一些的操作就需要查资料了。虽然有点水，不过还是记录一下 git 中一些稍微骚一些的操作。">
+<meta property="og:locale">
+<meta property="og:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_0.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_1.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_2.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_3.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_4.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_5.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_6.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_7.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_8.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_9.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_10.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_11.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_12.jpg">
+<meta property="article:published_time" content="2018-01-26T12:28:38.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.634Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="git">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zjuturtle.com/2018/01/26/git-notes/git_0.jpg">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2018/01/26/git-notes/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2018/01/26/git-notes/","path":"2018/01/26/git-notes/","title":"git 大起底"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>git 大起底 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#commit-%E8%9E%8D%E5%90%88"><span class="nav-number">1.</span> <span class="nav-text">commit 融合！</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%99%93%E7%BE%8E%E7%84%B0-%E3%81%AE-commit"><span class="nav-number">2.</span> <span class="nav-text">晓美焰 の commit</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#commit-history"><span class="nav-number">2.1.</span> <span class="nav-text">Commit History</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#reset"><span class="nav-number">2.1.1.</span> <span class="nav-text">Reset</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#checkout"><span class="nav-number">2.1.2.</span> <span class="nav-text">checkout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#revert"><span class="nav-number">2.1.3.</span> <span class="nav-text">Revert</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E5%B1%82%E9%9D%A2"><span class="nav-number">2.2.</span> <span class="nav-text">文件层面</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#reset-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">Reset</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#checkout-1"><span class="nav-number">2.2.2.</span> <span class="nav-text">Checkout</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reset-checkout-revert-%E5%B0%8F%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">reset checkout revert 小结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%B9%E6%9D%80%E4%BD%A0%E7%9A%84%E5%AD%98%E5%9C%A8"><span class="nav-number">3.</span> <span class="nav-text">抹杀你的存在！</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#git-filter-branch"><span class="nav-number">3.1.</span> <span class="nav-text">git filter-branch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bfg-%E5%B7%A5%E5%85%B7"><span class="nav-number">3.2.</span> <span class="nav-text">bfg 工具</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E9%9B%B6%E5%BC%80%E5%A7%8B%E7%9A%84-submodule"><span class="nav-number">4.</span> <span class="nav-text">从零开始的 submodule</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%A6%E5%A7%90-%E3%81%AE-head-detached"><span class="nav-number">5.</span> <span class="nav-text">学姐 の head detached</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2018/01/26/git-notes/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          git 大起底
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-01-26 20:28:38" itemprop="dateCreated datePublished" datetime="2018-01-26T20:28:38+08:00">2018-01-26</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/TechChatter/" itemprop="url" rel="index"><span itemprop="name">TechChatter</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>说起来惭愧，虽然 git 用了好几年，但大部分都停留在基本的 commit 和 push 上，最多也就涉及到一些 merge。稍微骚一些的操作就需要查资料了。虽然有点水，不过还是记录一下 git 中一些稍微骚一些的操作。</p>
+<span id="more"></span>
+<h2 id="commit-融合">commit 融合！</h2>
+<p>大家都知道最惨的事情莫过于：</p>
+<ul>
+<li>代码没保存 IDE 崩溃了</li>
+<li>代码没提交电脑崩溃了</li>
+</ul>
+<p>随着 IDE 的进化，现在大部分的编辑器都支持自动保存，第一种情况几乎不太会发生。对于第二种情况，那就只能更加频繁地在 git 上 push 代码以降低自己的损失了。但这样会有一个小小的问题，如果你比较频繁地 commit 就会变成这样子</p>
+<img src="/2018/01/26/git-notes/git_0.jpg" class="">
+<p>一堆的 commit 记录其实不算很美观。我们完全可以把很多次的 commit 合并为一个 commit。</p>
+<p>一般而言，自己的开发 branch 上 commit 乱一些无关紧要，但是当我们完成了一个功能，需要提交到 master 分支或者其他上游时，如果直接 merge，就会把所有乱七八糟的 commit 都一起提交。为了方便叙述我用一下 SourceTree 的 commit 图表</p>
+<img src="/2018/01/26/git-notes/git_1.jpg" class="">
+<p>假设我们在 dev 这个分支上，dev 这个分支在 master 的 init 这个 commit 上做了 ABC 三次 commit。现在如果我们直接运行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ git checkout master</span><br><span class="line">$ git merge dev</span><br></pre></td></tr></table></figure>
+<p>则在 master 分支上也会出现这三个 commit</p>
+<img src="/2018/01/26/git-notes/git_2.jpg" class="">
+<p>此时我们运行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git reset origin/master</span><br></pre></td></tr></table></figure>
+<p><code>git reset</code> 这个命令实际上将一个分支的末端指向了另一个提交。在这里，我们将本地的 master 分支末端重新指向 origin/master。现在 ABC 三个 commit 的修改都在 master 的工作区。接着运行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ git add -A</span><br><span class="line">$ git commit -m <span class="string">&quot;add new feature&quot;</span></span><br><span class="line">$ git push</span><br></pre></td></tr></table></figure>
+<p>然后就会变成这样</p>
+<img src="/2018/01/26/git-notes/git_3.jpg" class="">
+<p>如果之后有人在 master 分支上提交了新的代码，需要更新到自己的 dev 分支上。则需要</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ git pull</span><br><span class="line">$ git checkout dev</span><br><span class="line">$ git merge master</span><br><span class="line">$ git push</span><br></pre></td></tr></table></figure>
+<p>在一番 merge / 解决 conflict / push 之后便会这样子</p>
+<img src="/2018/01/26/git-notes/git_4.jpg" class="">
+<p>实际上我们也可以直接使用 <code>git rebase</code> 的命令来重写 git 历史直接合并 commit。但这个操作多少有点危险，而且如果已经将修改提交至远端再执行 <code>git rebase</code> 会遇到不小的麻烦。</p>
+<h2 id="晓美焰-の-commit">晓美焰 の commit</h2>
+<p>git 中的版本回退也是很常见的操作。</p>
+<p>如果想修改刚刚提交的 commit，往往想做两件事情：修改提交信息，或者修改你添加、修改和移除的文件的快照。如果只是想修改提交信息，那么这样就可以了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git commit --amend</span><br></pre></td></tr></table></figure>
+<p>如果想修改上一次提交的内容，则可先执行 <code>git add</code> 或 <code>git rm</code>，再执行 <code>git commit --amend</code></p>
+<p>对于真正意义上的代码回滚，我们会涉及到三个命令 <code>git reset</code> 、<code>git checkout</code> 和 <code>git revert</code>。我主要参考了<a target="_blank" rel="noopener" href="https://github.com/geeeeeeeeek/git-recipes/wiki/5.2-%E4%BB%A3%E7%A0%81%E5%9B%9E%E6%BB%9A%EF%BC%9AReset%E3%80%81Checkout%E3%80%81Revert-%E7%9A%84%E9%80%89%E6%8B%A9">这篇教程</a>。部分文字直接引用。</p>
+<p>牢记在 git 中有以下三个存储区域，在不同区域回滚需要不同的操作。</p>
+<img src="/2018/01/26/git-notes/git_5.jpg" class="">
+<h3 id="commit-history">Commit History</h3>
+<h4 id="reset">Reset</h4>
+<p><code>git reset</code> 将一个分支的末端指向另一个提交。利用这个特性我们可以删除当前分支的一些提交。比如执行下面的命令将 hotfix 分支回退了两个提交</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ git checkout hotfix</span><br><span class="line">$ git reset HEAD~2</span><br></pre></td></tr></table></figure>
+<p>hotfix 分支末端的两个提交现在变成了悬挂提交。也就是说，下次 Git 执行垃圾回收的时候，这两个提交会被删除。就像下图所示。</p>
+<img src="/2018/01/26/git-notes/git_6.jpg" class="">
+<p>当你还没将代码提交到服务器，<code>git reset</code> 是一个很简单的方法。但如果已经提交了，那就最好使用 <code>git revert</code> 等操作。<code>git reset</code> 还有参数来控制其影响区域：</p>
+<ul>
+<li>--soft – 缓存区和工作目录都不会被改变</li>
+<li>--mixed – 默认选项。缓存区和你指定的提交同步，但工作目录不受影响</li>
+<li>--hard – 缓存区和工作目录都同步到你指定的提交</li>
+</ul>
+<p>一张图解释清楚各个参数的作用域：</p>
+<img src="/2018/01/26/git-notes/git_7.jpg" class="">
+<p>一些小技巧：</p>
+<p><code>git reset --mixed HEAD</code> 将你当前的改动从缓存区中移除，但是这些改动还留在工作目录中。</p>
+<p><code>git reset --hard HEAD</code> 完全舍弃没有提交的更改。</p>
+<p>对于想回滚到某个特定的 commit 也可以利用 <code>git reset</code> 来达到，虽然用 <code>git revert</code> 可能会更贴切一点。比如从 D 回滚到 A</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ git reset --hard a</span><br><span class="line">$ git reset --soft d</span><br><span class="line">$ git commit</span><br></pre></td></tr></table></figure>
+<h4 id="checkout">checkout</h4>
+<p>大家用的最多的应该是使用 <code>git checkout</code> 切换分支。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git checkout hotfix</span><br></pre></td></tr></table></figure>
+<p>例如上面的命令将 HEAD 移动到一个新的分支，然后更新工作目录。Git 强制你提交或者缓存工作目录中的所有更改，不然在 checkout 的时候这些更改都会丢失。与 <code>git reset</code> 不同，<code>git checkout</code> 不会移动分支。</p>
+<img src="/2018/01/26/git-notes/git_8.jpg" class="">
+<p><code>git checkout</code> 除了可以切换分支，还可以切换到任意的 commit。其实这和切换分支是一样的：把 HEAD 移动到特定的 commit 上。比如，下面这个命令会 checkout 到当前提交的前两个 commit。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git checkout HEAD~2</span><br></pre></td></tr></table></figure>
+<img src="/2018/01/26/git-notes/git_9.jpg" class="">
+<p>使用 <code>git checkout</code> 可以很方便地在不同 commit 间切换。但如果你当前的 HEAD 没有任何分支引用，那么这会造成 HEAD 分离。这是非常危险的，如果你接着添加新的提交，然后切换到别的分支之后就没办法回到之前添加的这些提交。因此，在为分离的 HEAD 添加新的提交的时候你应该创建一个新的分支。</p>
+<h4 id="revert">Revert</h4>
+<p><code>Revert</code> 实际上是一个特殊的 commit。<code>Revert</code> 在撤销一个提交的同时会创建一个新的 commit。例如下面的命令会找出 HEAD 前倒数第二个提交，并创建一个新的提交的撤销更改。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ git checkout hotfix</span><br><span class="line">$ git revert HEAD~2</span><br></pre></td></tr></table></figure>
+<img src="/2018/01/26/git-notes/git_10.jpg" class="">
+<p>注意！这里只是 revert 了 HEAD 前倒数第二个 commit，但倒数第二个 commit 造成的修改还是存在。如果想要回到 HEAD 前倒数第二个 commit 的状态，则需要递归地执行 <code>git revert</code> 。例如当前 branch 的提交历史如下（参照了<a target="_blank" rel="noopener" href="http://serebrov.github.io/html/2014-01-04-git-revert-multiple-recent-comments.html">这里</a>）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">G1 - G2 - G3 - B1 - B2 - B3</span><br><span class="line">           \    \    \    \-- HEAD</span><br><span class="line">            \    \    \------ HEAD~1</span><br><span class="line">             \    \---------- HEAD~2</span><br><span class="line">              \-------------- HEAD~3</span><br></pre></td></tr></table></figure>
+<p>如果想要回滚到 G3 这个提交，则执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ git revert --no-commit HEAD~3..HEAD</span><br><span class="line">$ git add -A</span><br><span class="line">$ git commit -m <span class="string">&quot;revert to G3&quot;</span></span><br></pre></td></tr></table></figure>
+<p>一般而言，使用 <code>git revert</code> 相比 <code>git reset</code> 不会影响到已经提交的历史，所以更加合适回滚。</p>
+<h3 id="文件层面">文件层面</h3>
+<p>某些情况下，我们只需要操作某个特定的文件，而不是整个 commit 历史。这个时候可以在命令后面添加文件名实现。</p>
+<h4 id="reset-1">Reset</h4>
+<p>在 <code>git reset</code> 命令后跟文件操作，可以将缓存区文件同步到某个特定的提交。例子如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 将倒数第二个提交中的 foo.py 加入到缓存区中</span></span><br><span class="line">$ git reset HEAD~2 foo.py</span><br><span class="line"><span class="comment"># 从缓存区中移除 foo.py 而不会影响工作目录</span></span><br><span class="line">$ git reset HEAD foo.py</span><br></pre></td></tr></table></figure>
+<img src="/2018/01/26/git-notes/git_11.jpg" class="">
+<p>但要注意的是 <code>--soft</code> <code>--mixed</code> <code>--hard</code> 对文件层面上的 <code>git reset</code> 并没有作用。同时要注意 <code>git reset</code> 只对 track 过的文件有影响。要删除没有被 check 过的命令，需要执行 <code>git clean -df</code> 命令。</p>
+<h4 id="checkout-1">Checkout</h4>
+<p>Checkout 一个文件和带文件路径 <code>git reset</code> 非常像，除了它更改的是工作目录而不是缓存区。不像提交层面的 checkout 命令，它不会移动 HEAD引用，也就是你不会切换到别的分支上去。</p>
+<img src="/2018/01/26/git-notes/git_12.jpg" class="">
+<h3 id="reset-checkout-revert-小结">reset checkout revert 小结</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">命令</th>
+<th style="text-align: center;">作用域</th>
+<th style="text-align: left;">常用情景</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">git reset</td>
+<td style="text-align: center;">提交层面</td>
+<td style="text-align: left;">在私有分支上舍弃一些没有提交的更改</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">git reset</td>
+<td style="text-align: center;">文件层面</td>
+<td style="text-align: left;">将文件从缓存区中移除</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">git checkout</td>
+<td style="text-align: center;">提交层面</td>
+<td style="text-align: left;">切换分支或查看旧版本</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">git checkout</td>
+<td style="text-align: center;">文件层面</td>
+<td style="text-align: left;">舍弃工作目录中的更改</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">git revert</td>
+<td style="text-align: center;">提交层面</td>
+<td style="text-align: left;">在公共分支上回滚更改</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">git revert</td>
+<td style="text-align: center;">文件层面</td>
+<td style="text-align: left;">（然而并没有）</td>
+</tr>
+</tbody>
+</table>
+<h2 id="抹杀你的存在">抹杀你的存在！</h2>
+<p>使用 git 遇到还有一个比较尴尬的问题是不小心提交了密码，或者是提交了一些非常大的二进制文件。要想在 git 上彻底抹消这些个文件的存在痕迹和 git 的设计初衷相背，所以会稍微麻烦一些。</p>
+<h3 id="git-filter-branch">git filter-branch</h3>
+<p>这个命令算是 git 里面的大杀器之一，因为会涉及到对历史的修改，所以需要慎重。具体的各个参数可以参考<a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-filter-branch">git-filter-branch 官方文档</a></p>
+<p>例如，要从所有的历史中删除 <code>project/password.txt</code> 这个文件，可以执行下面的命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ git filter-branch --force --index-filter <span class="string">&#x27;git rm --cached --ignore-unmatch projects/password.txt&#x27;</span> --prune-empty --tag-name-filter cat -- --all</span><br><span class="line">$ git push --force --all</span><br></pre></td></tr></table></figure>
+<p>对于大文件，我们首先需要定位，下面这个命令可以查找当前 branch 最大的五个文件，参考<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/1286183/git-find-fat-commit/1290046#1290046">这里</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git ls-tree -r -t -l --full-name HEAD | sort -n -k 4 | tail -n 5</span><br></pre></td></tr></table></figure>
+<h3 id="bfg-工具">bfg 工具</h3>
+<p>对于大量的删除，还有另外一个好用的工具叫 <a target="_blank" rel="noopener" href="https://rtyley.github.io/bfg-repo-cleaner/">bfg</a>，号称比 git filter-branch 快 10 到 720 倍。它其实是一个 java 写的小程序，只要本地有 jdk 就可以运行。为了方便，还可以在自己 (Mac 下) 的 <code>.bash_profile</code> 里加一句</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">alias</span> bfg=<span class="string">&#x27;java -jar PATH_TO_BFG_JAR&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>首先找个干净的地方 clone 整个工程，在确认处理完后，再执行 <code>git gc</code> 然后提交</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> --mirror git://example.com/some-big-repo.git</span><br><span class="line">$ git reflog expire --expire=now --all &amp;&amp; git gc --prune=now --aggressive</span><br><span class="line">$ git push</span><br></pre></td></tr></table></figure>
+<p>下面是（从官网抄的）一些例子</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 删除所有名叫 &#x27;id_rsa&#x27; 或 &#x27;id_dsa&#x27; 的文件</span></span><br><span class="line">$ bfg --delete-files id_&#123;dsa,rsa&#125;  my-repo.git</span><br><span class="line"><span class="comment"># 删除所有大于 50 M 的文件</span></span><br><span class="line">$ bfg --strip-blobs-bigger-than 50M  my-repo.git</span><br><span class="line"><span class="comment"># 将所有 &#x27;passwords.txt&#x27; 文件里的内容替换为 ***REMOVED***</span></span><br><span class="line">$ bfg --replace-text passwords.txt  my-repo.git</span><br></pre></td></tr></table></figure>
+<h2 id="从零开始的-submodule">从零开始的 submodule</h2>
+<p><a target="_blank" rel="noopener" href="https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E5%AD%90%E6%A8%A1%E5%9D%97">submodule</a> 比较适合在一些项目中引入一些自己写的库。submodule 实质上是独立的一个 git 仓库。</p>
+<p>添加一个子模块很简单</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git submodule add https://github.com/chaconinc/DbConnector</span><br></pre></td></tr></table></figure>
+<p>执行完这个命令后，在 git 仓库里会多一个 <code>.gitmodules</code> 文件，该配置文件保存了项目 URL 与已经拉取的本地目录之间的映射。如果有多个子模块，该文件中就会有多条记录。 要重点注意的是，该文件也像 .gitignore 文件一样受到（通过）版本控制。 它会和该项目的其他部分一同被拉取推送。 这就是克隆该项目的人知道去哪获得子模块的原因。</p>
+<p>克隆含有子模块的项目可以有两种方法。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 方法一</span><br><span class="line">git submodule init</span><br><span class="line"># 方法二</span><br><span class="line">git clone --recursive https://github.com/chaconinc/MainProject</span><br></pre></td></tr></table></figure>
+<p>正常情况下，我们只会让子模块的内容随着上游更新而更新。我一般的方法就是在子模块的目录执行 <code>git pull</code> 。虽然也有方法可以在子模块里面修改文件，并合并上游的修改，但我不觉得这是一个好主意。</p>
+<h2 id="学姐-の-head-detached">学姐 の head detached</h2>
+<p>git 操作中有很多情况下会导致 head detached 状态。这个状态其实还是有点危险的，处于这个状态下你对文件的修改都没办法提交（因为不知道应该修改在哪个分支上）。</p>
+<p>造成的可能原因有</p>
+<ul>
+<li>使用 Checkout 指令直接跳到某个 Commit，而那个 Commit 刚好没有分支指向它</li>
+<li>Rebase 过程中也是不断处于 head detached 状态</li>
+<li>切换到某个远端分支时</li>
+</ul>
+<p>脱离这个状态，只要执行下面的命令就可以</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout master</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/git/" rel="tag"># git</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/12/26/fft/" rel="prev" title="任意长度的 FFT 算法-混合基算法及雷德算法">
+                  <i class="fa fa-chevron-left"></i> 任意长度的 FFT 算法-混合基算法及雷德算法
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/02/12/dsp-1/" rel="next" title="信号处理笔记（一）">
+                  信号处理笔记（一） <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"8f4c7ebc0731e5ea9d5d284adc821903"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

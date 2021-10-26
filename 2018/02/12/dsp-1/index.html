@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="年后要去做算法相关了，赶紧把信号处理的知识补一补。基本算是胡广书《数字信号处理》的笔记。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="信号处理笔记（一）">
+<meta property="og:url" content="https://zjuturtle.com/2018/02/12/dsp-1/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="年后要去做算法相关了，赶紧把信号处理的知识补一补。基本算是胡广书《数字信号处理》的笔记。">
+<meta property="og:locale">
+<meta property="og:image" content="https://zjuturtle.com/2018/02/12/dsp-1/sin_.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/02/12/dsp-1/rx.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/02/12/dsp-1/sin.jpg">
+<meta property="og:image" content="https://zjuturtle.com/2018/02/12/dsp-1/square.jpg">
+<meta property="article:published_time" content="2018-02-12T12:40:02.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.642Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="DSP">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zjuturtle.com/2018/02/12/dsp-1/sin_.jpg">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2018/02/12/dsp-1/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2018/02/12/dsp-1/","path":"2018/02/12/dsp-1/","title":"信号处理笔记（一）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>信号处理笔记（一） | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#lsi-%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.</span> <span class="nav-text">LSI 系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E6%80%A7%E5%8D%B7%E7%A7%AF"><span class="nav-number">1.1.</span> <span class="nav-text">线性卷积</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lsi-%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%A2%91%E7%8E%87%E5%93%8D%E5%BA%94"><span class="nav-number">1.2.</span> <span class="nav-text">LSI 系统的频率响应</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A1%AE%E5%AE%9A%E6%80%A7%E4%BF%A1%E5%8F%B7%E7%9A%84%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0"><span class="nav-number">2.</span> <span class="nav-text">确定性信号的相关函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E7%B3%BB%E6%95%B0"><span class="nav-number">2.1.</span> <span class="nav-text">相关系数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0"><span class="nav-number">2.2.</span> <span class="nav-text">相关函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0%E5%92%8C%E7%BA%BF%E6%80%A7%E5%8D%B7%E7%A7%AF%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">2.3.</span> <span class="nav-text">相关函数和线性卷积的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E7%9A%84%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8"><span class="nav-number">2.4.</span> <span class="nav-text">相关的实际应用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0%E5%BA%94%E7%94%A8%E4%B8%BE%E4%BE%8B"><span class="nav-number">3.</span> <span class="nav-text">相关函数应用举例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B1"><span class="nav-number">3.1.</span> <span class="nav-text">例1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B2"><span class="nav-number">3.2.</span> <span class="nav-text">例2</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2018/02/12/dsp-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          信号处理笔记（一）
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-02-12 20:40:02" itemprop="dateCreated datePublished" datetime="2018-02-12T20:40:02+08:00">2018-02-12</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>年后要去做算法相关了，赶紧把信号处理的知识补一补。基本算是胡广书《数字信号处理》的笔记。</p>
+<span id="more"></span>
+<h2 id="lsi-系统">LSI 系统</h2>
+<p>LSI 系统即线性时不变系统，同时具有线性和移不变性。</p>
+<ul>
+<li>线性：<span class="math inline">\(LSI[A(n)] + LSI[B(n)] = LSI[A(n)+B(n)]\)</span></li>
+<li>移不变：<span class="math inline">\(LSI[A(n)]=y(n) \rightarrow LSI[A(n-m)]=y(n-m)\)</span></li>
+</ul>
+<h3 id="线性卷积">线性卷积</h3>
+<p>卷积是一个蛮重要的概念了，我们假设一个 LSI 系统的冲激响应是 <span class="math inline">\(h(n)\)</span>，那么该系统对信号 <span class="math inline">\(x(n)\)</span> 的响应为</p>
+<p><span class="math display">\[y(n)= \sum_{k=- \infty}^{\infty}x(k)h(n-k)\]</span></p>
+<p>简记为 <span class="math inline">\(y(n)=x(n)*h(n)\)</span>。对于因果系统而言（即 <span class="math inline">\(n \lt 0\)</span> 时 <span class="math inline">\(h(n)\equiv 0\)</span>），意味着</p>
+<p><span class="math display">\[y(n) =\sum_{k=0}^{\infty}h(k)x(n-k)\]</span></p>
+<h3 id="lsi-系统的频率响应">LSI 系统的频率响应</h3>
+<p>对于一个 LSI 系统（线性时不变系统），它的冲击响应为 <span class="math inline">\(h(n)\)</span>。如果输入信号为 <span class="math inline">\(x(n) = e^{j \omega n}\)</span> 。其中 <span class="math inline">\(\omega\)</span> 为圆频率，单位 rad。</p>
+<p>那么根据欧拉公式有</p>
+<p><span class="math display">\[ e^{j \omega n} = cos(\omega n)+j\ sin(\omega n)\]</span></p>
+<p>由 <span class="math inline">\(x(n)\)</span> 引起的输出为</p>
+<p><span class="math display">\[\begin{split}y(n) &amp;= \sum_{k=-\infty}^{\infty }h(k)x(n-k) \\\
+ &amp;= e^{j \omega n} \sum_{k= - \infty}^{\infty}h(k)e^{-j \omega k} \\
+ &amp;=e^{j \omega n}H(e^{j \omega})\end{split}\]</span></p>
+<p>意味着输出 <span class="math inline">\(y(n)\)</span> 也包含了同频率的复正弦信号，但受到信号 <span class="math inline">\(H(e^{j \omega})\)</span> 的调制。因此称 <span class="math inline">\(e^{j \omega n}\)</span> 为系统的特征函数。<span class="math inline">\(H(e^{j \omega})\)</span> 为系统的频率响应，又称为系统的特征值。其实上式是 <span class="math inline">\(h(n)\)</span> 的离散傅立叶变换。这个 <span class="math inline">\(H(e^{j \omega})\)</span> 又可以进一步地分解为实部和虚部，或者幅度和相位。公式如下</p>
+<p><span class="math display">\[H(e^{j \omega})=H_R(e^{j \omega})+jH_I(e^{j \omega})\]</span> <span class="math display">\[H(e^{j \omega})=|H(e^{j \omega})|e^{j \phi(\omega)}\]</span></p>
+<p>如果我们将式中的 <span class="math inline">\(e^{j \omega}\)</span> 替换为 <span class="math inline">\(z\)</span> ，那么我们就得到了 z 变换的公式，<span class="math inline">\(H(z)\)</span> 是系统的转移函数</p>
+<p><span class="math display">\[H(z)=\sum_{n=- \infty}^{\infty}h(n)z^{-n}\]</span></p>
+<p>有一点融汇贯通的地方在于，设计一个数字滤波器（或者系统）就是设计一个转移函数 <span class="math inline">\(H(z)\)</span>。</p>
+<h2 id="确定性信号的相关函数">确定性信号的相关函数</h2>
+<h3 id="相关系数">相关系数</h3>
+<p>设 <span class="math inline">\(x(n)\)</span> 和 <span class="math inline">\(y(n)\)</span> 是两个能量有限的因果信号。相关系数定义如下</p>
+<p><span class="math display">\[\rho_{xy} = \frac{\sum_{n=0}^{\infty}x(n)y(n)}{\sqrt{\sum_{n=0}^{\infty}x^2(n)\sum_{n=0}^{\infty} y^2(n)}}\]</span></p>
+<p>上式中的分母其实是各自能量乘积的开方。且根据许瓦兹不等式有<span class="math inline">\(\lvert \rho_{xy} \rvert \leq 1\)</span>。但 <span class="math inline">\(\rho_{xy}\)</span> 仅反应了两个固定信号的相似程度，对于有一些相位差异的信号效果比较糟糕。因此需要引入相关函数</p>
+<h3 id="相关函数">相关函数</h3>
+<p>定义</p>
+<p><span class="math display">\[r_{xy}(m)=\sum_{n= -\infty}^{\infty}x(n)y(n+m)\]</span></p>
+<p>为信号的互相关函数。其实相当于 <span class="math inline">\(x(n)\)</span> 不动而 <span class="math inline">\(y(n)\)</span> 左移 <span class="math inline">\(m\)</span> 个单位相乘再相加。上式也可以改写如下</p>
+<p><span class="math display">\[r_{xy}=\sum_{n=-\infty}^{\infty}x(n-m)y(n)\]</span></p>
+<p>当<span class="math inline">\(y(n)=x(n)\)</span>时衍生出自相关函数定义</p>
+<p><span class="math display">\[r_{x}(m)=\sum_{n=-\infty}^{\infty}x(n)x(n+m)\]</span></p>
+<p>但要注意的是，如果信号 <span class="math inline">\(x(n)\)</span> 不是能量（有限）信号，那么其自相关函数可能为无穷。因此对于功率信号而言，需要将其相关函数定义如下</p>
+<p><span class="math display">\[r_{xy}(m)=\lim_{N \rightarrow \infty} \frac{1}{2N+1}\sum_{n=-N}^{N}x(n)y(n+m)\]</span></p>
+<p><span class="math display">\[r_{x}(m)=\lim_{N \rightarrow \infty} \frac{1}{2N+1}\sum_{n=-N}^{N}x(n)x(n+m)\]</span></p>
+<p>这里通过定义还可以得到一个小小的推论，如果 <span class="math inline">\(x(n)\)</span> 是周期信号，那么其自相关函数也是周期的，且与原周期一致。意味着无限的求和可以通过一个周期内的求和平均得到，即（下式中<span class="math inline">\(N\)</span>为周期）</p>
+<p><span class="math display">\[r_x(m) = \frac{1}{N} \sum_{n=1}^{N-1}x(n)x(n+m)\]</span></p>
+<p>对于复值信号，相关函数应该改写如下</p>
+<p><span class="math display">\[r_{xy}=\sum_{n=-\infty}^{\infty}x^*(n)y(n+m)\]</span></p>
+<p><span class="math display">\[r_{x}(m)=\sum_{n=-\infty}^{\infty}x^*(n)x(n+m)\]</span></p>
+<h3 id="相关函数和线性卷积的关系">相关函数和线性卷积的关系</h3>
+<p>我们假设 <span class="math inline">\(g(n)\)</span> 是 <span class="math inline">\(x(n)\)</span> 和 <span class="math inline">\(y(n)\)</span> 的线性卷积，即有<span class="math inline">\(g(n)=\sum_{m=-\infty}^{\infty}x(n-m)y(m)\)</span>，对调 <span class="math inline">\(m\)</span> 和 <span class="math inline">\(n\)</span> 则有</p>
+<p><span class="math display">\[g(m)=\sum_{m=-\infty}^{\infty}x(m-n)y(n)\]</span></p>
+<p>而 <span class="math inline">\(x(n)\)</span> 和 <span class="math inline">\(y(n)\)</span> 的互相关函数为</p>
+<p><span class="math display">\[\begin{split}r_{xy}(m)&amp;=\sum_{n=-\infty}^{\infty}x(n-m)y(n) \\\
+&amp;=\sum_{n=-\infty}^{\infty}x[-(m-n)]y(n) \\\
+&amp;=x(-m)*y(m)\end{split}\]</span></p>
+<p>同理对自相关函数有</p>
+<p><span class="math display">\[r_x(m)=x(-m)*x(m)\]</span></p>
+<p>但要注意，尽管相关和卷积的计算形式很相似，但是二者的物理意义是不一样的。相关反应的是两个信号之间的相关性，而卷积反应的是 LSI 系统输入输出以及单位抽样响应间的基本关系。</p>
+<h3 id="相关的实际应用">相关的实际应用</h3>
+<p>在实际的应用中需要注意两点。首先 <span class="math inline">\(x(n)\)</span> 一般是有限长度的，那么自相关函数则应该改写为</p>
+<p><span class="math display">\[r_x(m)=\frac1{N}\sum_{n=0}^{N-1-m}x_N(n)x_N(n+m)\]</span></p>
+<p>其中 <span class="math inline">\(m \in [-(N+1), N-1]\)</span>。上式仅计算了 <span class="math inline">\(0\)</span> 到 <span class="math inline">\(N-1\)</span> 部分。且要注意到 <span class="math inline">\(m\)</span> 越大，其使用的信号有效长度越短，相关函数的性能就越差。一般要求 <span class="math inline">\(m \ll N\)</span> 。且不管 <span class="math inline">\(x(n)\)</span> 是功率信号还是能量信号，都需要除以数据长度 <span class="math inline">\(N\)</span></p>
+<h2 id="相关函数应用举例">相关函数应用举例</h2>
+<p>用自相关函数可以检测信号中的隐含周期。例如信号 <span class="math inline">\(x(n)\)</span> 由理想信号 <span class="math inline">\(s(n)\)</span> 和 白噪声 <span class="math inline">\(u(n)\)</span> 组成。假定 <span class="math inline">\(s(n)\)</span> 的周期为 <span class="math inline">\(M\)</span>，<span class="math inline">\(x(n)\)</span> 的长度为 <span class="math inline">\(N\)</span> 且 <span class="math inline">\(N \ll M\)</span>，<span class="math inline">\(x(n)\)</span> 的自相关函数为</p>
+<p><span class="math display">\[\begin{split}r_x(m) &amp;= \frac1N\sum_{n=0}^{N-1}[s(n)+u(n)][s(n+m)+u(n+m)] \\\
+&amp;=r_s(m) + r_u(m)+r_{su}(m)+r_{us}(m) \end{split}\]</span></p>
+<p>正常情况下，我们可以认为 <span class="math inline">\(r_u(m)+r_{su}(m)+r_{us}(m)\)</span> 都是比较小的（噪声嘛）。因此对 <span class="math inline">\(x(n)\)</span> 贡献最大的项应该是 <span class="math inline">\(r_s(m)\)</span>。又因为自相关函数的周期和原函数是一致的，且会在 <span class="math inline">\(m=0,M,2M,...\)</span> 处出现峰值。</p>
+<h3 id="例1">例1</h3>
+<p>设信号 <span class="math inline">\(x(n)\)</span> 由正弦信号和白噪声叠加得到。正弦信号幅度为1，周期为 <span class="math inline">\(T=10\)</span>，噪声方差为1，二者的长度均为 <span class="math inline">\(N=1000\)</span>。那么信噪比为</p>
+<p><span class="math display">\[\begin{split}SNR &amp;= 10 \cdot \log_{10}[\frac{\frac1N\sum s^2(n)}{\frac1N\sum u^2(n)}] \\\
+&amp;=10 \cdot \log_{10}[\frac{\sum_{n=0}^{N}\sin^2{\frac {2\pi n}T}}{\sum_{n=0}^{N}u^2(n)}] \\\
+&amp;=10 \cdot \log_{10}[\frac{\frac NT \sum_{n=0}^{T}\sin^2(\frac {2\pi n}T )}{N}] \\\
+&amp;=10 \cdot \log_{10}[\frac{\frac NT \cdot \frac T2}N] \\\
+&amp;\approx-3.01\end{split}\]</span></p>
+<p>如下图我们直接看 <span class="math inline">\(x(n)\)</span> 的图像其实比较难看出它的正弦信号成分。</p>
+<img src="/2018/02/12/dsp-1/sin_.jpg" class="">
+<p>但如果我们观察它的自相关函数便可以很明显地看出其包含了正弦信号。</p>
+<img src="/2018/02/12/dsp-1/rx.jpg" class="">
+<p>多说无益，我们上 matlab 代码。</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">clc</span><br><span class="line">clear all</span><br><span class="line">close all</span><br><span class="line">N = <span class="number">1000</span>;</span><br><span class="line">T = <span class="number">10</span>;</span><br><span class="line">n = <span class="number">0</span>:(<span class="number">2</span>*<span class="built_in">pi</span>/T):(<span class="number">1000</span>/(<span class="number">2</span>*<span class="built_in">pi</span>/T));</span><br><span class="line">sn = <span class="built_in">sin</span>(n);</span><br><span class="line">un = <span class="built_in">randn</span>(<span class="number">1</span>, <span class="built_in">length</span>(n));</span><br><span class="line">xn = sn + un;</span><br><span class="line"></span><br><span class="line"><span class="comment">% 绘制原信号</span></span><br><span class="line"><span class="built_in">figure</span>(<span class="number">1</span>);</span><br><span class="line"><span class="built_in">plot</span>(<span class="number">0</span>:<span class="number">1</span>:<span class="number">60</span>, xn(<span class="number">1</span>:<span class="number">61</span>));</span><br><span class="line">xlabel(<span class="string">&#x27;n&#x27;</span>);</span><br><span class="line">ylabel(<span class="string">&#x27;x(n)&#x27;</span>);</span><br><span class="line">title(<span class="string">&#x27;x(n)&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">% 计算自相关函数</span></span><br><span class="line">rx=xcorr(xn,<span class="string">&#x27;biased&#x27;</span>);</span><br><span class="line">rx=rx(<span class="built_in">length</span>(xn):<span class="number">1</span>:<span class="keyword">end</span>);</span><br><span class="line"><span class="built_in">figure</span>(<span class="number">2</span>);</span><br><span class="line"><span class="built_in">plot</span>(<span class="number">0</span>:<span class="number">1</span>:<span class="number">60</span>, rx(<span class="number">1</span>:<span class="number">61</span>));</span><br><span class="line">xlabel(<span class="string">&#x27;n&#x27;</span>);</span><br><span class="line">ylabel(<span class="string">&#x27;r_x(n)&#x27;</span>);</span><br><span class="line">title(<span class="string">&#x27;r_x(n)&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="例2">例2</h3>
+<p>如果我们的白噪声方差为 0.1，那么假设我们有两个信号， <span class="math inline">\(s_{sin}(n)\)</span> 还是上面的正弦量，而 <span class="math inline">\(s_{square}(n)\)</span> 则是同周期的方波，定义如下</p>
+<p><span class="math display">\[s_{square}(n)=\begin{cases}
+&amp; 1&amp; n \in [kT, kT+\frac 12 T),k=0,1,2...\\\
+&amp;-1&amp; n \in [kT+\frac 12 T, kT + T),k=1,2,3...
+\end{cases}\]</span></p>
+<p>同样我们有带噪声的两个信号 <span class="math inline">\(x_{sin}(n)=s_{sin}(n)+u_{sin}(n)\)</span> 和 <span class="math inline">\(x_{square}(n)=s_{square}(n)+u_{square}(n)\)</span></p>
+<p>那么其实我们可以从自相关函数上去区分这两个信号。</p>
+<p>直接上 matlab 代码</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">clc</span><br><span class="line">clear all</span><br><span class="line">close all</span><br><span class="line">N = <span class="number">1000</span>;</span><br><span class="line">T = <span class="number">10</span>;</span><br><span class="line">n = <span class="number">0</span>:(<span class="number">2</span>*<span class="built_in">pi</span>/T):(<span class="number">1000</span>/(<span class="number">2</span>*<span class="built_in">pi</span>/T));</span><br><span class="line">s_sin = <span class="built_in">sin</span>(n);</span><br><span class="line">u_sin = <span class="built_in">randn</span>(<span class="number">1</span>, <span class="built_in">length</span>(n))/<span class="built_in">sqrt</span>(<span class="number">10</span>);</span><br><span class="line">x_sin = s_sin + u_sin;</span><br><span class="line">s_square = square(n);</span><br><span class="line">u_square = <span class="built_in">randn</span>(<span class="number">1</span>, <span class="built_in">length</span>(n))/<span class="built_in">sqrt</span>(<span class="number">10</span>);</span><br><span class="line">x_square = s_square + u_square;</span><br><span class="line"></span><br><span class="line"><span class="comment">% 正弦信号</span></span><br><span class="line">r_sin=xcorr(x_sin,<span class="string">&#x27;biased&#x27;</span>);</span><br><span class="line">r_sin=r_sin(<span class="built_in">length</span>(x_sin):<span class="number">1</span>:<span class="keyword">end</span>);</span><br><span class="line"><span class="built_in">figure</span>(<span class="number">1</span>);</span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">1</span>); </span><br><span class="line"><span class="built_in">plot</span>(<span class="number">0</span>:<span class="number">1</span>:<span class="number">60</span>, x_sin(<span class="number">1</span>:<span class="number">61</span>));</span><br><span class="line">title(<span class="string">&#x27;带噪声的信号&#x27;</span>);</span><br><span class="line">xlabel(<span class="string">&#x27;n&#x27;</span>);</span><br><span class="line">ylabel(<span class="string">&#x27;x_&#123;sin&#125;(n)&#x27;</span>);</span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">2</span>);</span><br><span class="line"><span class="built_in">plot</span>(<span class="number">0</span>:<span class="number">1</span>:<span class="number">60</span>, r_sin(<span class="number">1</span>:<span class="number">61</span>));</span><br><span class="line">xlabel(<span class="string">&#x27;n&#x27;</span>);</span><br><span class="line">ylabel(<span class="string">&#x27;r_&#123;xsin&#125;(n)&#x27;</span>);</span><br><span class="line">title(<span class="string">&#x27;相关函数&#x27;</span>);</span><br><span class="line">suptitle(<span class="string">&#x27;正弦信号&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">% 方波信号</span></span><br><span class="line">r_square=xcorr(x_square,<span class="string">&#x27;biased&#x27;</span>);</span><br><span class="line">r_square=r_square(<span class="built_in">length</span>(x_square):<span class="number">1</span>:<span class="keyword">end</span>);</span><br><span class="line"><span class="built_in">figure</span>(<span class="number">2</span>);</span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">1</span>); </span><br><span class="line"><span class="built_in">plot</span>(<span class="number">0</span>:<span class="number">1</span>:<span class="number">60</span>, x_square(<span class="number">1</span>:<span class="number">61</span>));</span><br><span class="line">title(<span class="string">&#x27;带噪声的信号&#x27;</span>);</span><br><span class="line">xlabel(<span class="string">&#x27;n&#x27;</span>);</span><br><span class="line">ylabel(<span class="string">&#x27;x_&#123;square&#125;(n)&#x27;</span>);</span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">2</span>);</span><br><span class="line"><span class="built_in">plot</span>(<span class="number">0</span>:<span class="number">1</span>:<span class="number">60</span>, r_square(<span class="number">1</span>:<span class="number">61</span>));</span><br><span class="line">xlabel(<span class="string">&#x27;n&#x27;</span>);</span><br><span class="line">ylabel(<span class="string">&#x27;r_&#123;xsquare&#125;(n)&#x27;</span>);</span><br><span class="line">title(<span class="string">&#x27;相关函数&#x27;</span>);</span><br><span class="line">suptitle(<span class="string">&#x27;方波信号&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>根据下面的图像我们可以比较容易地分辨出正弦和方波。</p>
+<img src="/2018/02/12/dsp-1/sin.jpg" class="">
+<img src="/2018/02/12/dsp-1/square.jpg" class="">
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/DSP/" rel="tag"># DSP</a>
+              <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/01/26/git-notes/" rel="prev" title="git 大起底">
+                  <i class="fa fa-chevron-left"></i> git 大起底
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/02/19/dsp-2/" rel="next" title="信号处理笔记（二）">
+                  信号处理笔记（二） <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"5d937a8cb7f76cfd44c6d9ffd5037c41"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

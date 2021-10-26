@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zjuturtle.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":null}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="在工作中遇到一些 JNI 调用，这里记录一下。需求比较复杂，从 Java 端看，它需要向 JNI 传递一个 Interface 的回调接口对象，然后 JNI 内部去回调它。调用链是：JAVA-&gt;JNI-&gt;CPP-&gt;JAVA(回调)。从上层的 java 代码上看是这样子的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JNI 的多线程回调">
+<meta property="og:url" content="https://zjuturtle.com/2020/01/25/jni-multithread-callback/index.html">
+<meta property="og:site_name" content="zjuturtle&#39;s blog">
+<meta property="og:description" content="在工作中遇到一些 JNI 调用，这里记录一下。需求比较复杂，从 Java 端看，它需要向 JNI 传递一个 Interface 的回调接口对象，然后 JNI 内部去回调它。调用链是：JAVA-&gt;JNI-&gt;CPP-&gt;JAVA(回调)。从上层的 java 代码上看是这样子的">
+<meta property="og:locale">
+<meta property="article:published_time" content="2020-01-25T11:11:07.000Z">
+<meta property="article:modified_time" content="2021-10-26T12:02:47.650Z">
+<meta property="article:author" content="zjuturtle">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="JNI">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://zjuturtle.com/2020/01/25/jni-multithread-callback/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-Hans","comments":true,"permalink":"https://zjuturtle.com/2020/01/25/jni-multithread-callback/","path":"2020/01/25/jni-multithread-callback/","title":"JNI 的多线程回调"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>JNI 的多线程回调 | zjuturtle's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zjuturtle's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E5%A4%87%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text">预备知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#jni_onload-%E5%87%BD%E6%95%B0"><span class="nav-number">1.1.</span> <span class="nav-text">JNI_OnLoad 函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#javavm-%E5%92%8C-jnienv"><span class="nav-number">1.2.</span> <span class="nav-text">JavaVM 和 JNIEnv</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#global-reference-%E5%92%8C-local-reference"><span class="nav-number">1.3.</span> <span class="nav-text">Global Reference 和 Local Reference</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jni-%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">JNI 实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#java-%E7%AB%AF%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.</span> <span class="nav-text">Java 端实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zjuturtle"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zjuturtle</p>
+  <div class="site-description" itemprop="description">瞎几把搞的幸运E</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjuturtle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjuturtle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:leijinghaog@gmail.com" title="E-Mail → mailto:leijinghaog@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://zjuturtle.com/2020/01/25/jni-multithread-callback/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zjuturtle">
+      <meta itemprop="description" content="瞎几把搞的幸运E">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zjuturtle's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JNI 的多线程回调
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2020-01-25 19:11:07" itemprop="dateCreated datePublished" datetime="2020-01-25T19:11:07+08:00">2020-01-25</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-10-26 20:02:47" itemprop="dateModified" datetime="2021-10-26T20:02:47+08:00">2021-10-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/JavaManor/" itemprop="url" rel="index"><span itemprop="name">JavaManor</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>在工作中遇到一些 JNI 调用，这里记录一下。需求比较复杂，从 Java 端看，它需要向 JNI 传递一个 Interface 的回调接口对象，然后 JNI 内部去回调它。调用链是：JAVA-&gt;JNI-&gt;CPP-&gt;JAVA(回调)。从上层的 java 代码上看是这样子的</p>
+<span id="more"></span>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> Interface ICallBackJava &#123;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">callBackJava</span><span class="params">(<span class="keyword">int</span>[] data)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FooJava</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">FooJava</span><span class="params">(ICallBackJava cb)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 初始化逻辑，需要向 JNI 传递实现 ICallBackJava 接口的对象</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addInput</span><span class="params">(<span class="keyword">int</span>[] data)</span> </span>&#123;</span><br><span class="line">       <span class="comment">// 向 JNI 输入一些数据，输入后会异步调用 ICallBackJava 的回调</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 销毁该 FooJava 相关的资源</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 以下是调用片段</span></span><br><span class="line">FooJava foo = <span class="keyword">new</span> FooJava((data) -&gt; &#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;data=&quot;</span>+Arrays.toString(data));</span><br><span class="line">                <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            &#125;);</span><br><span class="line"><span class="keyword">int</span>[] input = <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;<span class="number">0</span>, <span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>&#125;;</span><br><span class="line">foo.addInput(input);</span><br><span class="line">foo.destroy();</span><br></pre></td></tr></table></figure>
+<h2 id="预备知识">预备知识</h2>
+<h3 id="jni_onload-函数">JNI_OnLoad 函数</h3>
+<p>如果在 JNI 的 C++ 实现中包含了这个函数，则会在调用 System.loadLibrary 函数的时候会自动调用，在这里可以做一些初始化工作。一个常用的操作是缓存 JavaVM 用于其他线程获取 JNIEnv</p>
+<h3 id="javavm-和-jnienv">JavaVM 和 JNIEnv</h3>
+<p>JavaVM是虚拟机在JNI中的表示，一个JVM中只有一个JavaVM对象，这个对象是线程共享的。一般而言，一个程序中只会有一个 JavaVM。JNIEnv类型是一个指向全部JNI方法的指针。该指针只在创建它的线程有效，不能跨线程传递</p>
+<h3 id="global-reference-和-local-reference">Global Reference 和 Local Reference</h3>
+<p>在 JNI 中使用的引用分为两类：Global/Local Reference 。Local Reference 仅在本地调用期间有效，而 Global Reference 则在显式销毁前都一直有效。</p>
+<p>所有传递给 JNI 方法的引用都是 Local 的，并且所有 JNI 返回的引用也都是 Local 的。在程序中我们可以通过 Local Reference 来创造 Global Reference（使用 env-&gt;NewGlobalRef 方法），当然也可以把 Global Reference 作为返回值。要注意的是， Local Reference 只在创建它的线程有效，是不能跨线程的，所以最好不要缓存 Local Reference。</p>
+<h2 id="jni-实现">JNI 实现</h2>
+<p>我个人倾向于将 JNI 的包装类中所有的方法都变成 static 方法（类似于 C 风格），java 端的 JNI 包装类如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExampleJni</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.loadLibrary(<span class="string">&quot;example_jni&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">long</span> <span class="title">create</span><span class="params">(ICallBackJava cb)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">addInput</span><span class="params">(<span class="keyword">long</span> ptr, <span class="keyword">int</span>[] data)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">(<span class="keyword">long</span> ptr)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>对应的 JNI 的头文件我就不详细写了，我们直接来看实现，以及各参数的说明。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// com_example_ExampleJni.cpp</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 这里专门搞了一个类存储 Java 传过来的对象</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">FooCpp</span> &#123;</span></span><br><span class="line">    <span class="keyword">void</span>* callBackObject;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> JavaVM *jvm;</span><br><span class="line"><span class="keyword">static</span> jclass iCallBackClazz;</span><br><span class="line"></span><br><span class="line"><span class="function">jint <span class="title">JNI_OnLoad</span><span class="params">(JavaVM* vm, <span class="keyword">void</span>* reserved)</span></span>&#123;</span><br><span class="line">    <span class="comment">// 把 JavaVM 存下来，在回调函数中通过它来得到 JNIEnv</span></span><br><span class="line">    jvm = vm;</span><br><span class="line">    JNIEnv *env;</span><br><span class="line">    <span class="keyword">if</span> (vm-&gt;<span class="built_in">GetEnv</span>(<span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">void</span>**&gt;(&amp;env), JNI_VERSION_1_8) != JNI_OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> JNI_ERR;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 把回调函数的 jclass 通过 GlobalRef 的方式存下来，因为 jclass (是 Local Reference)不能跨线程</span></span><br><span class="line">    iCallBackClazz = (jclass)env-&gt;<span class="built_in">NewGlobalRef</span>(env-&gt;<span class="built_in">FindClass</span>(<span class="string">&quot;com/example/ICallBackJava&quot;</span>));</span><br><span class="line">    <span class="keyword">return</span> JNI_VERSION_1_8;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">callBackCppFunc</span><span class="params">(<span class="keyword">void</span>* usrPtr, <span class="keyword">int</span> *data, <span class="keyword">int</span> length)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 通过 JavaVM 获得当前线程的 JNIEnv</span></span><br><span class="line">    JNIEnv *env;</span><br><span class="line">    jvm-&gt;<span class="built_in">AttachCurrentThread</span>(<span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">void</span> **&gt;(&amp;env), <span class="literal">nullptr</span>);</span><br><span class="line">    jmethodID cbMethodId = env-&gt;<span class="built_in">GetMethodID</span>(iCallBackClazz, <span class="string">&quot;callBackJava&quot;</span>, <span class="string">&quot;([II)I&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将 data 数组转换为 java 中的 int 数组</span></span><br><span class="line">    jintArray dataArr = env-&gt;<span class="built_in">NewIntArray</span>(dataLength);</span><br><span class="line">    env-&gt;<span class="built_in">SetIntArrayRegion</span>(dataArr, <span class="number">0</span>, length, data);</span><br><span class="line">    env-&gt;<span class="built_in">CallIntMethod</span>((jobject)usrPtr, cbMethodId, dataArr);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 这个必须和 AttachCurrentThread 方法成对出现</span></span><br><span class="line">    jvm-&gt;<span class="built_in">DetachCurrentThread</span>();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">JNIEXPORT jlong JNICALL <span class="title">Java_com_example_create</span><span class="params">(JNIEnv *env, jclass jclazz, jobject callback)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 将 callBack 对象存起来，注意这里用的是 Global reference。同时 new 了一个 FooCpp 对象，并将其指针（转成了 long）返回</span></span><br><span class="line">    FooCpp* ptr = <span class="keyword">new</span> FooCpp;</span><br><span class="line">    ptr-&gt;callBackObject = env-&gt;<span class="built_in">NewGlobalRef</span>(callback);</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">long</span>)ptr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">JNIEXPORT <span class="keyword">void</span> JNICALL <span class="title">Java_com_example_addInput</span><span class="params">(JNIEnv *env, jclass jclazz, jlong ptr, jintArray data)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span>* data = (<span class="keyword">int</span>*)env-&gt;<span class="built_in">GetIntArrayElements</span>(data, <span class="literal">nullptr</span>);</span><br><span class="line">    <span class="keyword">int</span> length = env-&gt;<span class="built_in">GetArrayLength</span>(data);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 实际上下面这个回调也可以在其他线程进行，这里就直接调用了</span></span><br><span class="line">    <span class="built_in">callBackCppFunc</span>((<span class="keyword">void</span>*)ptr, data, length);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">JNIEXPORT <span class="keyword">void</span> JNICALL <span class="title">Java_com_example_destory</span><span class="params">(JNIEnv *env, jclass jclazz, jlong ptr)</span> </span>&#123;</span><br><span class="line">    FooCpp* fooPtr = (FooCpp*)ptr;</span><br><span class="line">    <span class="comment">// 在 create 中创建的 Global Reference 需要销毁</span></span><br><span class="line">    env-&gt;<span class="built_in">DeleteGlobalRef</span>((jobject)fooPtr-&gt;callBackObject);</span><br><span class="line">    <span class="keyword">delete</span> fooPtr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="java-端实现">Java 端实现</h2>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FooJava</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> fooPtr;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">FooJava</span><span class="params">(ICallBackJava cb)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.fooPtr = ExampleJni.create(cb);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addInput</span><span class="params">(<span class="keyword">int</span>[] data)</span> </span>&#123;</span><br><span class="line">       ExampleJni.addInput(<span class="keyword">this</span>.fooPtr, data);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 让外部可以显式调用销毁函数，直接在 JNI 层 delete </span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        ExampleJni.destroy(<span class="keyword">this</span>.fooPtr);</span><br><span class="line">        fooPtr = <span class="number">0L</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="参考资料">参考资料</h2>
+<p><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/design.html">Oracle JNI</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/JNI/" rel="tag"># JNI</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/01/25/transformer/" rel="prev" title="Transformer 模型笔记">
+                  <i class="fa fa-chevron-left"></i> Transformer 模型笔记
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/01/25/consistent-hashing/" rel="next" title="一致性 Hash 算法">
+                  一致性 Hash 算法 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zjuturtle</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"AnotherZjuturtle","repo":"Gitalk","client_id":"08e86c9d0536ed791bf9","client_secret":"0982e8cb7b507eee3022547b44ebc4c4f6f2a944","admin_user":"AnotherZjuturtle","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"23e73c321b4b2885add280c11bb54050"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>
